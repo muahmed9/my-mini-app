@@ -14,8 +14,7 @@
         .file-info { display: flex; justify-content: space-between; align-items: center; width: 100%; }
         .invoice-card { background: rgba(0,0,0,0.08); padding: 15px; border-radius: 10px; display: none; text-align: right; margin-top: 20px; }
         input[type="number"], input[type="text"], input[type="tel"] { padding: 10px; border-radius: 8px; border: 1px solid #ccc; margin: 5px 0; width: 90%; box-sizing: border-box; }
-        input[type="number"] { width: 60px; text-align: center; }
-        select, button { width: 100%; padding: 12px; margin: 10px 0; border-radius: 8px; border: none; font-size: 16px; font-weight: bold; cursor: pointer; }
+        button { width: 100%; padding: 12px; margin: 10px 0; border-radius: 8px; border: none; font-size: 16px; font-weight: bold; cursor: pointer; }
         button { background: #248bcf; color: white; }
         .loc-btn { background: #4caf50; font-size: 14px; }
         .delete-btn { background: #ff4d4d; width: auto; padding: 5px 10px; font-size: 12px; margin-right: 10px; }
@@ -24,41 +23,49 @@
         .progress-container { width: 100%; background-color: #ddd; border-radius: 5px; margin-top: 8px; display: none; }
         .progress-bar { width: 0%; height: 8px; background-color: #4caf50; border-radius: 5px; transition: width 0.3s; }
         #photoNote { color: #ff9800; font-size: 0.9em; display: none; font-weight: bold; background: #fff3e0; padding: 8px; border-radius: 5px; border-right: 4px solid #ff9800; margin-bottom: 10px; }
+        #success-screen { display: none; padding: 40px 20px; }
+        .success-icon { font-size: 50px; color: #4caf50; margin-bottom: 20px; }
     </style>
 </head>
 <body>
-    <div class="logo-container">
-        <img src="logo.png" alt="شعار مكتبة الوراق" onerror="this.style.display='none'">
-    </div>
-    <h1>📚 مكتبة الوراق</h1>
-    
-    <div class="upload-box" onclick="document.getElementById('fileInput').click()">
-        <input type="file" id="fileInput" multiple accept=".pdf,image/*" style="display:none">
-        <p>📁 اضغط لإضافة ملفات أو صور</p>
+    <div id="main-app">
+        <div class="logo-container">
+            <img src="logo.png" alt="شعار مكتبة الوراق" onerror="this.style.display='none'">
+        </div>
+        <h1>📚 مكتبة الوراق</h1>
+        <div class="upload-box" onclick="document.getElementById('fileInput').click()">
+            <input type="file" id="fileInput" multiple accept=".pdf,image/*" style="display:none">
+            <p>📁 اضغط لإضافة ملفات أو صور</p>
+        </div>
+        <div id="fileList"></div>
+        <div id="invoice" class="invoice-card">
+            <h3>تفاصيل الطلب 📑</h3>
+            <p id="photoNote">⚠️ التنبيه: الصور تطبع وجه واحد فقط.</p>
+            <div id="printOptionsArea">
+                <label>نوع الطباعة للملفات:</label>
+                <select id="printType">
+                    <option value="c_1">🌈 ملون - وجه واحد</option>
+                    <option value="c_2">🌈 ملون - وجهين</option>
+                    <option value="n_1">⚪ عادي - وجه واحد</option>
+                    <option value="n_2">⚪ عادي - وجهين</option>
+                </select>
+            </div>
+            <div style="margin-top: 15px;">
+                <input type="text" id="userName" placeholder="الاسم الثلاثي">
+                <input type="tel" id="userPhone" placeholder="رقم الهاتف">
+                <button type="button" class="loc-btn" onclick="getLocation()">📍 تحديد موقع التوصيل</button>
+                <p id="locStatus" style="font-size: 0.8em; color: #4caf50;">الموقع غير محدد</p>
+            </div>
+            <div class="price-details" id="priceDisplay"></div>
+            <button id="confirmBtn" style="margin-top: 20px;">إرسال الطلب النهائي 🛒</button>
+        </div>
     </div>
 
-    <div id="fileList"></div>
-
-    <div id="invoice" class="invoice-card">
-        <h3>تفاصيل الطلب 📑</h3>
-        <p id="photoNote">⚠️ التنبيه: الصور تطبع وجه واحد فقط.</p>
-        <div id="printOptionsArea">
-            <label>نوع الطباعة للملفات:</label>
-            <select id="printType">
-                <option value="c_1">🌈 ملون - وجه واحد</option>
-                <option value="c_2">🌈 ملون - وجهين</option>
-                <option value="n_1">⚪ عادي - وجه واحد</option>
-                <option value="n_2">⚪ عادي - وجهين</option>
-            </select>
-        </div>
-        <div style="margin-top: 15px;">
-            <input type="text" id="userName" placeholder="الاسم الثلاثي">
-            <input type="tel" id="userPhone" placeholder="رقم الهاتف">
-            <button type="button" class="loc-btn" onclick="getLocation()">📍 تحديد موقع التوصيل</button>
-            <p id="locStatus" style="font-size: 0.8em; color: #4caf50;">الموقع غير محدد</p>
-        </div>
-        <div class="price-details" id="priceDisplay"></div>
-        <button id="confirmBtn" style="margin-top: 20px;">إرسال الطلب النهائي 🛒</button>
+    <div id="success-screen">
+        <div class="success-icon">✅</div>
+        <h2>تم الإرسال بنجاح!</h2>
+        <p>وصلت ملفاتك إلينا. تفقد رسائل البوت للحصول على تفاصيل الطلب.</p>
+        <button onclick="tg.close()" style="background: #4caf50;">تم</button>
     </div>
 
     <script>
@@ -68,7 +75,7 @@
         let userLocation = "لم يتم التحديد";
         let lastPrices = { print: 0, total: 0 };
         const botToken = '8234329147:AAF_jZ23898e_xJivB23HQe_gRnknFBuXnA';
-        const chatId = '7618746133';
+        const myChatId = '7618746133'; // الـ ID الخاص بك لاستلام الطلبات
 
         document.getElementById('fileInput').onchange = async (e) => {
             const files = Array.from(e.target.files);
@@ -96,7 +103,7 @@
                 document.getElementById('photoNote').style.display = hasImages ? "block" : "none";
                 document.getElementById('printOptionsArea').style.display = (hasImages && !hasPDFs) ? "none" : "block";
                 allFiles.forEach((f, i) => {
-                    list.innerHTML += `<div class="file-item"><div class="file-info"><div style="flex:1;"><strong>${f.name.substring(0,20)}</strong><br><small>${f.pages} ${f.isImg ? 'صورة' : 'صفحة'}</small></div><div><input type="number" value="${f.copies}" min="1" onchange="updateCopies(${i}, this.value)"><button class="delete-btn" onclick="removeFile(${i})">حذف</button></div></div><div class="progress-container" id="prog-cont-${i}"><div class="progress-bar" id="prog-bar-${i}"></div></div></div>`;
+                    list.innerHTML += `<div class="file-item"><div class="file-info"><div style="flex:1;"><strong>${f.name.substring(0,20)}</strong><br><small>${f.pages} صفحة</small></div><div><input type="number" value="${f.copies}" min="1" onchange="updateCopies(${i}, this.value)"><button class="delete-btn" onclick="removeFile(${i})">حذف</button></div></div><div class="progress-container" id="prog-cont-${i}"><div class="progress-bar" id="prog-bar-${i}"></div></div></div>`;
                 });
             } else { document.getElementById('invoice').style.display = 'none'; }
             calculate();
@@ -108,7 +115,6 @@
         function calculate() {
             const type = document.getElementById('printType').value;
             let colorUnits = 0, normalUnits = 0, photoCount = 0;
-
             allFiles.forEach(f => {
                 if (f.isImg) photoCount += f.copies;
                 else {
@@ -117,8 +123,6 @@
                     else normalUnits += (units * f.copies);
                 }
             });
-
-            // حساب الملون المطور (نظام الشرائح)
             let colorPrice = 0;
             if (colorUnits > 0) {
                 if (colorUnits < 10) colorPrice = 1000;
@@ -127,23 +131,11 @@
                 else if (colorUnits <= 79) colorPrice = colorUnits * 110;
                 else colorPrice = colorUnits * 100;
             }
-
             let normalPrice = (type === 'n_1') ? normalUnits * 90 : (type === 'n_2' ? normalUnits * 75 : 0);
-            
-            // حساب الصور (كما في الملون)
-            let photoPrice = 0;
-            if (photoCount > 0) {
-                if (photoCount < 5) photoPrice = 1000;
-                else photoPrice = photoCount * 150;
-            }
-
+            let photoPrice = photoCount > 0 ? (photoCount < 5 ? 1000 : photoCount * 150) : 0;
             lastPrices.print = colorPrice + normalPrice + photoPrice;
             lastPrices.total = lastPrices.print + 1000;
-
-            document.getElementById('priceDisplay').innerHTML = `
-                <div class="price-row"><span>سعر الطباعة:</span><span>${lastPrices.print.toLocaleString()} د.ع</span></div>
-                <div class="price-row"><span>أجور التوصيل:</span><span>1,000 د.ع</span></div>
-                <div class="price-row grand-total"><span>المجموع الكلي:</span><span>${lastPrices.total.toLocaleString()} د.ع</span></div>`;
+            document.getElementById('priceDisplay').innerHTML = `<div class="price-row"><span>سعر الطباعة:</span><span>${lastPrices.print.toLocaleString()} د.ع</span></div><div class="price-row"><span>أجور التوصيل:</span><span>1,000 د.ع</span></div><div class="price-row grand-total"><span>المجموع الكلي:</span><span>${lastPrices.total.toLocaleString()} د.ع</span></div>`;
         }
 
         function getLocation() {
@@ -152,21 +144,21 @@
                 document.getElementById('locStatus').innerText = "✅ تم تحديد الموقع";
             });
         }
-        document.getElementById('printType').onchange = calculate;
 
-        function uploadWithProgress(fObj, index, name) {
+        async function uploadFile(fObj, index, name) {
+            const formData = new FormData();
+            formData.append('chat_id', myChatId);
+            formData.append('document', fObj.file);
+            let info = fObj.isImg ? "صور" : document.getElementById('printType').selectedOptions[0].text;
+            formData.append('caption', `الملف: ${fObj.name}\nالنسخ: ${fObj.copies}\nنوع: ${info}\nالزبون: ${name}`);
+            
+            document.getElementById(`prog-cont-${index}`).style.display = 'block';
             return new Promise((resolve, reject) => {
                 const xhr = new XMLHttpRequest();
-                const formData = new FormData();
-                formData.append('chat_id', chatId);
-                formData.append('document', fObj.file);
-                let currentType = fObj.isImg ? "صور (وجه واحد)" : document.getElementById('printType').selectedOptions[0].text;
-                formData.append('caption', `ملف: ${fObj.name}\nنسخ: ${fObj.copies}\nنوع: ${currentType}\nزبون: ${name}`);
-                document.getElementById(`prog-cont-${index}`).style.display = 'block';
-                xhr.upload.addEventListener('progress', (e) => {
+                xhr.upload.onprogress = (e) => {
                     if (e.lengthComputable) document.getElementById(`prog-bar-${index}`).style.width = (e.loaded / e.total * 100) + '%';
-                });
-                xhr.onreadystatechange = () => { if (xhr.readyState === 4 && xhr.status === 200) resolve(); };
+                };
+                xhr.onload = () => xhr.status === 200 ? resolve() : reject();
                 xhr.open('POST', `https://api.telegram.org/bot${botToken}/sendDocument`);
                 xhr.send(formData);
             });
@@ -175,20 +167,44 @@
         document.getElementById('confirmBtn').onclick = async () => {
             const name = document.getElementById('userName').value;
             const phone = document.getElementById('userPhone').value;
-            if (!name || !phone) { alert("أكمل البيانات!"); return; }
+            const userTgId = tg.initDataUnsafe.user?.id; // الحصول على ID الزبون
+
+            if (!name || !phone) { alert("أدخل بياناتك!"); return; }
             document.getElementById('confirmBtn').disabled = true;
-            document.getElementById('confirmBtn').innerText = "جاري الإرسال... ⏳";
+            document.getElementById('confirmBtn').innerText = "جاري المعالجة... ⏳";
+
             try {
-                const summary = `📦 طلب جديد\n👤 ${name}\n📞 ${phone}\n💰 ${lastPrices.total} د.ع\n📍 [موقع التوصيل](${userLocation})`;
+                // 1. إرسال طلب لك (إلى حسابك)
+                const summary = `📦 **طلب جديد**\n👤 ${name}\n📞 ${phone}\n💰 ${lastPrices.total} د.ع\n📍 [موقع التوصيل](${userLocation})`;
                 await fetch(`https://api.telegram.org/bot${botToken}/sendMessage`, {
                     method: 'POST',
                     headers: {'Content-Type': 'application/json'},
-                    body: JSON.stringify({chat_id: chatId, text: summary, parse_mode: 'Markdown'})
+                    body: JSON.stringify({chat_id: myChatId, text: summary, parse_mode: 'Markdown'})
                 });
-                for (let i = 0; i < allFiles.length; i++) await uploadWithProgress(allFiles[i], i, name);
-                alert("✅ تم الإرسال بنجاح!");
-                tg.close();
-            } catch (e) { alert("❌ فشل الإرسال"); document.getElementById('confirmBtn').disabled = false; }
+
+                // 2. إرسال الملفات لك
+                for (let i = 0; i < allFiles.length; i++) {
+                    await uploadFile(allFiles[i], i, name);
+                }
+
+                // 3. إرسال رسالة تأكيد للزبون (عبر البوت)
+                if (userTgId) {
+                    const orderNum = Math.floor(1000 + Math.random() * 9000);
+                    const clientMsg = `✅ **تم استلام طلبك بنجاح!**\n\nرقم الطلب: #${orderNum}\nالمجموع: ${lastPrices.total} د.ع\n\nشكراً لثقتك بـ **مكتبة الوراق**. سيتم التواصل معك عند اكتمال الطباعة. ✨`;
+                    await fetch(`https://api.telegram.org/bot${botToken}/sendMessage`, {
+                        method: 'POST',
+                        headers: {'Content-Type': 'application/json'},
+                        body: JSON.stringify({chat_id: userTgId, text: clientMsg, parse_mode: 'Markdown'})
+                    });
+                }
+
+                document.getElementById('main-app').style.display = 'none';
+                document.getElementById('success-screen').style.display = 'block';
+
+            } catch (e) {
+                alert("فشل الإرسال، حاول ثانية.");
+                document.getElementById('confirmBtn').disabled = false;
+            }
         };
     </script>
 </body>
