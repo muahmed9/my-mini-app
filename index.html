@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>مكتبة الوراق - النسخة الاحترافية</title>
+    <title>مكتبة الوراق - النسخة الاحترافية المضمونة</title>
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.16.105/pdf.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/mammoth/1.4.21/mammoth.browser.min.js"></script>
@@ -43,7 +43,7 @@
 
         <div class="welcome-card">
             <h2>مرحباً بك ✨</h2>
-            <p>يسعدنا خدمتك! ارفع ملفاتك الآن وسنتولى طباعتها وتوصيلها لك.</p>
+            <p>يسعدنا خدمتك! ارفع ملفاتك الآن وسنتولى طباعتها وتوصيلها لباب بيتك.</p>
         </div>
         
         <div class="upload-section" onclick="document.getElementById('fileInput').click()">
@@ -61,6 +61,7 @@
                     <button class="opt-choice active" id="btn-c" onclick="setOpt('color','c')">🌈 ملون</button>
                     <button class="opt-choice" id="btn-n" onclick="setOpt('color','n')">⚪ عادي</button>
                 </div>
+                
                 <div id="sideOptionArea">
                     <p>طريقة الطباعة:</p>
                     <div class="option-group">
@@ -68,7 +69,10 @@
                         <button class="opt-choice" id="btn-2" onclick="setOpt('side','2')">📖 وجهين</button>
                     </div>
                 </div>
-                <div id="photoNotice" class="photo-notice" style="display:none;">⚠️ الصور تُطبع وجه واحد فقط.</div>
+                
+                <div id="photoNoticeArea" style="display:none;">
+                    <div class="photo-notice">⚠️ الصور تُطبع وجه واحد فقط.</div>
+                </div>
             </div>
 
             <div class="invoice-card">
@@ -106,6 +110,7 @@
                     let fileObj = { file: f, name: f.name, pages: '...', copies: 1, isImg: f.type.startsWith('image/'), type: '' };
                     allFiles.push(fileObj);
                     render();
+
                     if (f.type === 'application/pdf') {
                         const data = await f.arrayBuffer();
                         const pdf = await pdfjsLib.getDocument({data}).promise;
@@ -140,24 +145,32 @@
 
         function render() {
             const list = document.getElementById('fileList'); list.innerHTML = '';
-            const hasDocs = allFiles.some(f => !f.isImg);
+            
+            // فحص وجود أي ملف ليس صورة
+            const containsDocuments = allFiles.some(f => !f.isImg);
             
             if (allFiles.length > 0) {
                 document.getElementById('optionsContainer').style.display = 'block';
-                // إخفاء خيار وجه/وجهين إذا كانت صوراً فقط
-                document.getElementById('sideOptionArea').style.display = hasDocs ? 'block' : 'none';
-                document.getElementById('photoNotice').style.display = hasDocs ? 'none' : 'block';
                 
-                // تصفير خيار الوجهين إذا أصبحت الصور هي الوحيدة المتبقية
-                if(!hasDocs) opts.side = '1';
+                // التحكم في خيارات الوجه والوجهين بناءً على الفحص المباشر
+                if (containsDocuments) {
+                    document.getElementById('sideOptionArea').style.display = 'block';
+                    document.getElementById('photoNoticeArea').style.display = 'none';
+                } else {
+                    document.getElementById('sideOptionArea').style.display = 'none';
+                    document.getElementById('photoNoticeArea').style.display = 'block';
+                    opts.side = '1'; // إجبار النظام على حساب وجه واحد للصور
+                }
 
                 allFiles.forEach((f, i) => {
                     list.innerHTML += `<div class="file-card"><strong>${f.name.substring(0,30)}</strong><br><small>${f.pages} ص | ${f.type}</small>
                     <div class="copies-wrapper"><span>النسخ:</span><div style="display:flex; gap:10px;"><button class="btn-count" onclick="changeCopy(${i},-1)">-</button><b>${f.copies}</b><button class="btn-count" onclick="changeCopy(${i},1)">+</button></div></div>
                     <div class="progress-container" id="prog-cont-${i}"><div class="progress-bar" id="prog-bar-${i}"></div></div>
-                    <span style="color:red; cursor:pointer; font-size:0.8rem; display:block; margin-top:5px;" onclick="removeFile(${i})">حذف 🗑️</span></div>`;
+                    <span style="color:red; cursor:pointer; font-size:0.8rem; display:block; margin-top:8px;" onclick="removeFile(${i})">حذف 🗑️</span></div>`;
                 });
-            } else document.getElementById('optionsContainer').style.display = 'none';
+            } else {
+                document.getElementById('optionsContainer').style.display = 'none';
+            }
             calculate();
         }
 
@@ -168,8 +181,10 @@
             let totalDocPages = 0, totalImages = 0, totalSheets = 0;
             allFiles.forEach(f => {
                 let p = parseInt(f.pages) || 0;
-                if (f.isImg) { totalImages += f.copies; totalSheets += f.copies; }
-                else {
+                if (f.isImg) { 
+                    totalImages += f.copies; 
+                    totalSheets += f.copies; 
+                } else {
                     totalDocPages += (p * f.copies);
                     totalSheets += (opts.side === '2' ? Math.ceil(p / 2) : p) * f.copies;
                 }
@@ -204,7 +219,7 @@
             document.getElementById('confirmBtn').disabled = true;
 
             try {
-                const summary = `🆕 طلب جديد #${orderId}\n👤 الزبون: ${name}\n📞 هاتف: ${phone}\n💰 السعر: ${window.finalTotal} د.ع\n📍 [الموقع](${userLocation})`;
+                const summary = `🆕 طلب جديد #${orderId}\n👤 الزبون: ${name}\n📞 هاتف: ${phone}\n💰 السعر: ${window.finalTotal.toLocaleString()} د.ع\n📍 [الموقع](${userLocation})`;
                 await fetch(`https://api.telegram.org/bot${botToken}/sendMessage`, {
                     method: 'POST', headers: {'Content-Type': 'application/json'},
                     body: JSON.stringify({chat_id: myChatId, text: summary, parse_mode: 'Markdown'})
@@ -214,7 +229,7 @@
                     const fd = new FormData();
                     fd.append('chat_id', myChatId);
                     fd.append('document', allFiles[i].file);
-                    fd.append('caption', `الطلب: #${orderId}\nالزبون: ${name}\n📞 هاتف: ${phone}\nنسخ: ${allFiles[i].copies}\nالنوع: ${allFiles[i].type}`);
+                    fd.append('caption', `الطلب: #${orderId}\nالزبون: ${name}\n📞 هاتف: ${phone}\nالنسخ: ${allFiles[i].copies}\nالنوع: ${allFiles[i].type}`);
                     document.getElementById(`prog-cont-${i}`).style.display = 'block';
                     await new Promise((res) => {
                         const xhr = new XMLHttpRequest();
