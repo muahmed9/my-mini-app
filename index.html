@@ -3,16 +3,15 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>مكتبة الوراق - طلبات متعددة</title>
+    <title>مكتبة الوراق - الحساب الموحد</title>
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.16.105/pdf.min.js"></script>
-    
     <style>
         body { font-family: sans-serif; text-align: center; padding: 20px; background-color: var(--tg-theme-bg-color); color: var(--tg-theme-text-color); }
         .upload-box { border: 2px dashed #248bcf; padding: 20px; border-radius: 10px; cursor: pointer; margin-bottom: 20px; }
         .file-item { background: rgba(0,0,0,0.05); margin: 10px 0; padding: 10px; border-radius: 8px; display: flex; justify-content: space-between; align-items: center; text-align: right; }
         .invoice-card { background: rgba(0,0,0,0.08); padding: 15px; border-radius: 10px; display: none; text-align: right; margin-top: 20px; }
-        input[type="number"] { width: 50px; padding: 5px; border-radius: 5px; border: 1px solid #ccc; text-align: center; }
+        input[type="number"] { width: 55px; padding: 5px; border-radius: 5px; border: 1px solid #ccc; text-align: center; }
         select, button { width: 100%; padding: 12px; margin: 10px 0; border-radius: 8px; border: none; font-size: 16px; }
         button { background: #248bcf; color: white; font-weight: bold; cursor: pointer; }
         .delete-btn { background: #ff4d4d; width: auto; padding: 5px 10px; font-size: 12px; margin-right: 10px; }
@@ -23,13 +22,13 @@
     
     <div class="upload-box" onclick="document.getElementById('fileInput').click()">
         <input type="file" id="fileInput" multiple accept=".pdf,image/*" style="display:none">
-        <p>📁 اضغط لرفع (أو إضافة) ملفات PDF أو صور</p>
+        <p>📁 اضغط لإضافة ملفات أو صور</p>
     </div>
 
     <div id="fileList"></div>
 
     <div id="invoice" class="invoice-card">
-        <label>نوع الطباعة (يسري على جميع الملفات):</label>
+        <label>نوع الطباعة (للكل):</label>
         <select id="printType">
             <option value="c_1">🌈 ملون - وجه واحد</option>
             <option value="c_2">🌈 ملون - وجهين</option>
@@ -39,37 +38,27 @@
         
         <hr>
         <h2 id="finalPrice">السعر الإجمالي: 0 د.ع</h2>
-        <p style="font-size: 0.8em; color: gray;">* سيتم إضافة 1,000 د.ع للتوصيل عند الاستلام</p>
-        <button id="confirmBtn">تأكيد الطلب وإرسال التفاصيل 🛒</button>
+        <p style="font-size: 0.8em; color: gray;">* سيتم إضافة 1,000 د.ع للتوصيل لاحقاً</p>
+        <button id="confirmBtn">تأكيد الطلب 🛒</button>
     </div>
 
     <script>
         const tg = window.Telegram.WebApp;
         tg.ready();
 
-        // المخزن الدائم للملفات لمنع الحذف عند الرفع الجديد
         let allFiles = [];
 
         document.getElementById('fileInput').onchange = async (e) => {
             const newFiles = Array.from(e.target.files);
-            
             for (let f of newFiles) {
-                // منع التكرار بناءً على الاسم والحجم
                 if (!allFiles.some(item => item.name === f.name && item.size === f.size)) {
                     let p = 1;
                     if (f.type === 'application/pdf') {
-                        try {
-                            const data = await f.arrayBuffer();
-                            const pdf = await pdfjsLib.getDocument({data}).promise;
-                            p = pdf.numPages;
-                        } catch (err) { console.error("Error reading PDF:", err); }
+                        const data = await f.arrayBuffer();
+                        const pdf = await pdfjsLib.getDocument({data}).promise;
+                        p = pdf.numPages;
                     }
-                    allFiles.push({ 
-                        name: f.name, 
-                        pages: p, 
-                        isImg: f.type.startsWith('image/'), 
-                        copies: 1 
-                    });
+                    allFiles.push({ name: f.name, pages: p, isImg: f.type.startsWith('image/'), copies: 1, size: f.size });
                 }
             }
             render();
@@ -78,16 +67,12 @@
         function render() {
             const list = document.getElementById('fileList');
             list.innerHTML = '';
-            
             if (allFiles.length > 0) {
                 document.getElementById('invoice').style.display = 'block';
                 allFiles.forEach((f, index) => {
                     list.innerHTML += `
                         <div class="file-item">
-                            <div style="flex:1;">
-                                <strong>${f.name.substring(0,25)}</strong><br>
-                                <small>${f.pages} ${f.isImg ? 'صورة' : 'صفحة'}</small>
-                            </div>
+                            <div style="flex:1;"><strong>${f.name.substring(0,20)}</strong><br><small>${f.pages} ${f.isImg ? 'صورة' : 'صفحة'}</small></div>
                             <div>
                                 <label>النسخ:</label>
                                 <input type="number" value="${f.copies}" min="1" onchange="updateCopies(${index}, this.value)">
@@ -95,53 +80,51 @@
                             </div>
                         </div>`;
                 });
-            } else {
-                document.getElementById('invoice').style.display = 'none';
-            }
+            } else { document.getElementById('invoice').style.display = 'none'; }
             calculate();
         }
 
-        window.updateCopies = (i, v) => { 
-            allFiles[i].copies = parseInt(v) || 1; 
-            calculate(); 
-        };
-
-        window.removeFile = (i) => { 
-            allFiles.splice(i, 1); 
-            render(); 
-        };
+        window.updateCopies = (i, v) => { allFiles[i].copies = parseInt(v) || 1; calculate(); };
+        window.removeFile = (i) => { allFiles.splice(i, 1); render(); };
 
         function calculate() {
             const type = document.getElementById('printType').value;
-            let grandTotal = 0;
+            let totalColorUnits = 0;
+            let totalNormalFilePages = 0;
+            let totalNormalPhotos = 0;
 
             allFiles.forEach(f => {
-                let unitPrice = 0;
                 if (type.startsWith('c')) {
-                    // منطق الملون
-                    let units = f.isImg ? 1 : (type === 'c_1' ? f.pages : Math.ceil(f.pages/2));
-                    unitPrice = (units > 0 && units < 5) ? 1000 : units * 150;
+                    // حساب الوحدات الملونة (صور + صفحات ملفات)
+                    let fileUnits = (type === 'c_1' ? f.pages : Math.ceil(f.pages / 2));
+                    totalColorUnits += (f.isImg ? 1 : fileUnits) * f.copies;
                 } else {
-                    // منطق العادي
-                    unitPrice = (f.isImg ? 90 : (type === 'n_1' ? f.pages * 90 : f.pages * 75));
+                    // حساب العادي
+                    if (f.isImg) totalNormalPhotos += (1 * f.copies);
+                    else totalNormalFilePages += (f.pages * f.copies);
                 }
-                // ضرب السعر في عدد النسخ لكل ملف
-                grandTotal += (unitPrice * f.copies);
             });
 
+            let rawPrice = 0;
+            if (type.startsWith('c')) {
+                // تطبيق قاعدة الحد الأدنى 1000 للملون
+                rawPrice = (totalColorUnits > 0 && totalColorUnits < 5) ? 1000 : totalColorUnits * 150;
+            } else {
+                // حساب العادي: 90 للوجه و 75 للوجهين
+                let filePrice = (type === 'n_1' ? totalNormalFilePages * 90 : totalNormalFilePages * 75);
+                rawPrice = filePrice + (totalNormalPhotos * 90);
+            }
+
             // التقريب لأقرب 250
-            let rounded = Math.ceil(grandTotal / 250) * 250;
+            let rounded = Math.ceil(rawPrice / 250) * 250;
             document.getElementById('finalPrice').innerText = `السعر الإجمالي: ${rounded.toLocaleString()} د.ع`;
         }
 
         document.getElementById('printType').onchange = calculate;
 
         document.getElementById('confirmBtn').onclick = () => {
-            const orderSummary = allFiles.map(f => `${f.name} (عدد النسخ: ${f.copies})`).join('\n');
-            tg.sendData(JSON.stringify({
-                details: orderSummary,
-                totalPrice: document.getElementById('finalPrice').innerText
-            }));
+            const summary = allFiles.map(f => `${f.name} (نسخ: ${f.copies})`).join('\n');
+            tg.sendData(JSON.stringify({ details: summary, total: document.getElementById('finalPrice').innerText }));
             tg.close();
         };
     </script>
