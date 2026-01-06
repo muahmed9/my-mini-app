@@ -3,54 +3,47 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>مكتبة الوراق - النسخة الاحترافية</title>
+    <title>مكتبة الوراق - النسخة النهائية</title>
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.16.105/pdf.min.js"></script>
     <style>
         :root { --main-blue: #248bcf; --light-blue: #eef7fd; --text-dark: #333; --bg-gray: #f9f9f9; }
         body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: var(--bg-gray); color: var(--text-dark); padding: 15px; margin: 0; line-height: 1.6; }
         
-        .header { margin-bottom: 25px; padding: 20px 0; }
-        .logo-container img { width: 90px; height: 90px; border-radius: 50%; border: 3px solid white; box-shadow: 0 4px 10px rgba(0,0,0,0.1); }
-        h1 { font-size: 1.4rem; margin-top: 10px; color: var(--main-blue); }
+        .header { margin-bottom: 20px; padding: 20px 0; }
+        .logo-container img { width: 85px; height: 85px; border-radius: 50%; border: 3px solid white; box-shadow: 0 4px 10px rgba(0,0,0,0.1); }
+        
+        .welcome-msg { background: white; padding: 15px; border-radius: 12px; margin-bottom: 20px; border-right: 5px solid var(--main-blue); text-align: right; box-shadow: 0 2px 5px rgba(0,0,0,0.05); }
+        .welcome-msg h2 { margin: 0; color: var(--main-blue); font-size: 1.1rem; }
+        .welcome-msg p { margin: 5px 0 0; font-size: 0.9rem; color: #666; }
 
-        /* منطقة الرفع */
-        .upload-section { background: white; border: 2px dashed var(--main-blue); border-radius: 15px; padding: 25px; margin-bottom: 20px; cursor: pointer; transition: 0.3s; }
-        .upload-section:active { background: var(--light-blue); transform: scale(0.98); }
+        .upload-section { background: white; border: 2px dashed var(--main-blue); border-radius: 15px; padding: 25px; margin-bottom: 20px; cursor: pointer; text-align: center; }
         .upload-section p { margin: 0; font-weight: bold; color: var(--main-blue); }
 
-        /* قائمة الملفات */
         .file-card { background: white; border-radius: 12px; padding: 15px; margin-bottom: 12px; box-shadow: 0 2px 5px rgba(0,0,0,0.05); border-right: 5px solid var(--main-blue); text-align: right; }
-        .file-name { font-weight: bold; color: var(--text-dark); display: block; margin-bottom: 5px; }
-        .file-meta { font-size: 0.85rem; color: #777; }
+        .file-name { font-weight: bold; color: var(--text-dark); display: block; margin-bottom: 5px; font-size: 0.95rem; }
         
-        /* التحكم في النسخ */
         .copies-wrapper { display: flex; align-items: center; justify-content: space-between; margin-top: 10px; background: var(--bg-gray); padding: 8px 12px; border-radius: 10px; }
-        .copies-label { font-size: 0.9rem; font-weight: bold; }
         .copies-btn-group { display: flex; align-items: center; gap: 15px; }
         .btn-count { background: var(--main-blue); color: white; border: none; width: 30px; height: 30px; border-radius: 50%; font-size: 1.2rem; cursor: pointer; display: flex; align-items: center; justify-content: center; }
         .count-val { font-weight: bold; font-size: 1.1rem; width: 25px; text-align: center; }
 
-        /* خيارات الطباعة */
-        .options-section { background: white; border-radius: 15px; padding: 20px; margin-bottom: 20px; box-shadow: 0 2px 10px rgba(0,0,0,0.05); }
-        .section-title { font-weight: bold; font-size: 1rem; color: var(--main-blue); margin-bottom: 15px; display: block; border-bottom: 1px solid #eee; padding-bottom: 8px; }
-        .option-group { display: flex; gap: 10px; margin-bottom: 20px; }
-        .opt-choice { flex: 1; border: 1px solid #ddd; border-radius: 10px; padding: 12px; font-size: 0.9rem; cursor: pointer; transition: 0.3s; background: white; }
-        .opt-choice.active { background: var(--main-blue); color: white; border-color: var(--main-blue); box-shadow: 0 4px 8px rgba(36,139,207,0.3); }
+        .options-section { background: white; border-radius: 15px; padding: 20px; margin-bottom: 20px; box-shadow: 0 2px 10px rgba(0,0,0,0.05); text-align: right; }
+        .section-title { font-weight: bold; font-size: 1rem; color: var(--main-blue); margin-bottom: 12px; display: block; }
+        .option-group { display: flex; gap: 10px; margin-bottom: 15px; }
+        .opt-choice { flex: 1; border: 1px solid #ddd; border-radius: 10px; padding: 12px; font-size: 0.9rem; cursor: pointer; background: white; font-weight: bold; }
+        .opt-choice.active { background: var(--main-blue); color: white; border-color: var(--main-blue); }
         
-        /* بطاقة السعر (الفاتورة) */
-        .invoice-card { background: #333; color: white; border-radius: 15px; padding: 20px; margin-bottom: 20px; text-align: right; }
-        .inv-row { display: flex; justify-content: space-between; margin-bottom: 8px; font-size: 0.95rem; }
-        .inv-total { border-top: 1px solid #555; margin-top: 12px; padding-top: 12px; font-size: 1.3rem; font-weight: bold; color: #fff; }
+        .photo-alert { background: #fff3e0; color: #e65100; padding: 10px; border-radius: 8px; font-size: 0.85rem; margin-bottom: 15px; border-right: 4px solid #ff9800; font-weight: bold; }
 
-        /* سكشن التوصيل */
-        .delivery-section { background: white; border-radius: 15px; padding: 20px; box-shadow: 0 2px 10px rgba(0,0,0,0.05); display: none; margin-top: 25px; border-top: 4px solid #4caf50; }
-        input { width: 100%; padding: 12px; margin-bottom: 15px; border: 1px solid #ddd; border-radius: 10px; box-sizing: border-box; font-size: 1rem; background: var(--bg-gray); }
-        .btn-action { width: 100%; padding: 15px; border: none; border-radius: 12px; font-size: 1.1rem; font-weight: bold; cursor: pointer; transition: 0.3s; margin-bottom: 10px; }
-        .btn-confirm { background: #4caf50; color: white; }
-        .btn-loc { background: var(--main-blue); color: white; font-size: 0.9rem; margin-bottom: 15px; }
-        
-        .delete-file { color: #ff4d4d; font-size: 0.8rem; text-decoration: underline; cursor: pointer; margin-top: 10px; display: inline-block; }
+        .invoice-card { background: #333; color: white; border-radius: 15px; padding: 20px; margin-bottom: 20px; text-align: right; }
+        .inv-row { display: flex; justify-content: space-between; margin-bottom: 8px; font-size: 0.9rem; }
+        .inv-total { border-top: 1px solid #555; margin-top: 10px; padding-top: 10px; font-size: 1.2rem; font-weight: bold; }
+
+        .delivery-section { background: white; border-radius: 15px; padding: 20px; box-shadow: 0 2px 10px rgba(0,0,0,0.05); border-top: 4px solid #4caf50; text-align: right; }
+        input { width: 100%; padding: 12px; margin-bottom: 15px; border: 1px solid #ddd; border-radius: 10px; box-sizing: border-box; background: var(--bg-gray); }
+        .btn-confirm { width: 100%; padding: 15px; border: none; border-radius: 12px; font-size: 1.1rem; font-weight: bold; cursor: pointer; background: #4caf50; color: white; }
+        .delete-file { color: #ff4d4d; font-size: 0.8rem; cursor: pointer; margin-top: 8px; display: inline-block; }
     </style>
 </head>
 <body>
@@ -58,32 +51,43 @@
     <div id="app-content">
         <div class="header">
             <div class="logo-container">
-                <img src="logo.png" alt="شعار مكتبة الوراق" onerror="this.style.display='none'">
+                <img src="logo.png" alt="لوغو الوراق" onerror="this.style.display='none'">
             </div>
             <h1>مكتبة الوراق</h1>
         </div>
 
+        <div class="welcome-msg">
+            <h2>مرحباً بك في مكتبتنا ✨</h2>
+            <p>يرجى رفع ملفات الـ PDF أو الصور التي ترغب بطباعتها، وسنقوم بتجهيزها لك بأفضل جودة.</p>
+        </div>
+
         <div class="upload-section" onclick="document.getElementById('fileInput').click()">
             <input type="file" id="fileInput" multiple accept=".pdf,image/*" style="display:none">
-            <p>📂 اضغط هنا لإضافة الملفات</p>
+            <p>📂 أضف ملفاتك هنا للبدء</p>
         </div>
 
         <div id="fileList"></div>
 
         <div id="optionsContainer" style="display:none;">
             <div class="options-section">
-                <span class="section-title">إعدادات الطباعة</span>
+                <span class="section-title">إعدادات الطباعة 🛠️</span>
                 
-                <p style="font-size: 0.85rem; text-align: right; margin-bottom: 8px;">اختر نوع الألوان:</p>
+                <p style="font-size: 0.85rem; margin-bottom: 8px;">اختر نوع الألوان:</p>
                 <div class="option-group">
                     <button class="opt-choice active" id="btn-c" onclick="setOpt('color','c')">🌈 ملون</button>
                     <button class="opt-choice" id="btn-n" onclick="setOpt('color','n')">⚪ عادي</button>
                 </div>
 
-                <p style="font-size: 0.85rem; text-align: right; margin-bottom: 8px;">اختر طريقة الطباعة:</p>
-                <div class="option-group">
-                    <button class="opt-choice active" id="btn-1" onclick="setOpt('side','1')">📄 وجه واحد</button>
-                    <button class="opt-choice" id="btn-2" onclick="setOpt('side','2')">📖 وجهين</button>
+                <div id="sideOptionArea">
+                    <p style="font-size: 0.85rem; margin-bottom: 8px;">اختر طريقة الطباعة:</p>
+                    <div class="option-group">
+                        <button class="opt-choice active" id="btn-1" onclick="setOpt('side','1')">📄 وجه واحد</button>
+                        <button class="opt-choice" id="btn-2" onclick="setOpt('side','2')">📖 وجهين</button>
+                    </div>
+                </div>
+                
+                <div id="photoNotice" class="photo-alert" style="display:none;">
+                    💡 تنبيه: الصور تطبع دائماً على وجه واحد فقط.
                 </div>
             </div>
 
@@ -92,21 +96,20 @@
                 <div class="inv-total" id="grandTotal">0 د.ع</div>
             </div>
 
-            <div class="delivery-section" id="deliverySection">
-                <span class="section-title" style="color:#4caf50">معلومات التوصيل</span>
-                <input type="text" id="userName" placeholder="الاسم الكامل">
-                <input type="tel" id="userPhone" placeholder="رقم الهاتف">
-                <button class="btn-action btn-loc" onclick="getLocation()" id="locBtn">📍 تحديد موقع التوصيل</button>
-                <button class="btn-action btn-confirm" id="confirmBtn">تأكيد وإرسال الطلب ✅</button>
+            <div class="delivery-section">
+                <span class="section-title" style="color:#4caf50">معلومات الاستلام 📍</span>
+                <input type="text" id="userName" placeholder="الاسم الثلاثي">
+                <input type="tel" id="userPhone" placeholder="رقم الهاتف للاتصال">
+                <button class="btn-confirm" id="confirmBtn">إرسال الطلب للمكتبة ✅</button>
             </div>
         </div>
     </div>
 
     <div id="success-screen" style="display:none; text-align: center; padding: 100px 20px;">
         <div style="font-size: 80px;">✅</div>
-        <h2>تم استلام طلبك بنجاح</h2>
-        <p>شكراً لتعاملك مع مكتبة الوراق. سيتم التواصل معك قريباً.</p>
-        <button onclick="tg.close()" style="padding: 12px 40px; border-radius: 10px; background: #4caf50; color: white; border: none;">إغلاق</button>
+        <h2>تم الإرسال بنجاح!</h2>
+        <p>تلقينا طلبك وسنرسل لك تفاصيله في رسالة خاصة عبر البوت.</p>
+        <button onclick="tg.close()" style="padding: 12px 40px; border-radius: 10px; background: #4caf50; color: white; border: none; font-weight: bold;">شكراً لك</button>
     </div>
 
     <script>
@@ -114,7 +117,6 @@
         tg.ready();
         let allFiles = [];
         let opts = { color: 'c', side: '1' };
-        let userLocation = "لم يتم التحديد";
         const botToken = '8234329147:AAF_jZ23898e_xJivB23HQe_gRnknFBuXnA';
         const myChatId = '7618746133';
 
@@ -151,23 +153,27 @@
         function render() {
             const list = document.getElementById('fileList');
             list.innerHTML = '';
+            const hasPDF = allFiles.some(f => !f.isImg);
+            
             if (allFiles.length > 0) {
                 document.getElementById('optionsContainer').style.display = 'block';
-                document.getElementById('deliverySection').style.display = 'block';
+                document.getElementById('sideOptionArea').style.display = hasPDF ? 'block' : 'none';
+                document.getElementById('photoNotice').style.display = hasPDF ? 'none' : 'block';
+
                 allFiles.forEach((f, i) => {
                     list.innerHTML += `
                         <div class="file-card">
-                            <span class="file-name">${f.name.substring(0,30)}</span>
-                            <span class="file-meta">${f.pages} صفحة | ${f.isImg ? 'صورة' : 'ملف PDF'}</span>
+                            <span class="file-name">${f.name.substring(0,35)}</span>
+                            <span style="font-size:0.8rem; color:#888">${f.pages} صفحة | ${f.isImg ? 'صورة' : 'PDF'}</span>
                             <div class="copies-wrapper">
-                                <span class="copies-label">كم نسخة تريد؟</span>
+                                <span style="font-size:0.85rem">كم نسخة؟</span>
                                 <div class="copies-btn-group">
                                     <button class="btn-count" onclick="changeCopy(${i}, -1)">-</button>
                                     <span class="count-val">${f.copies}</span>
                                     <button class="btn-count" onclick="changeCopy(${i}, 1)">+</button>
                                 </div>
                             </div>
-                            <span class="delete-file" onclick="removeFile(${i})">حذف الملف</span>
+                            <span class="delete-file" onclick="removeFile(${i})">حذف 🗑️</span>
                         </div>`;
                 });
             } else { document.getElementById('optionsContainer').style.display = 'none'; }
@@ -177,65 +183,70 @@
         window.removeFile = (i) => { allFiles.splice(i, 1); render(); };
 
         function calculate() {
-            let totalPaper = 0;
-            let photoCount = 0;
+            let totalPaper = 0, photoCount = 0;
             allFiles.forEach(f => {
                 if (f.isImg) photoCount += f.copies;
-                else {
+                else if (typeof f.pages === 'number') {
                     let p = (opts.side === '2') ? Math.ceil(f.pages / 2) : f.pages;
                     totalPaper += (p * f.copies);
                 }
             });
-
             let totalUnits = totalPaper + photoCount;
             let printPrice = 0;
             if (totalUnits > 0) {
                 if (opts.color === 'c') {
                     if (totalUnits < 10) printPrice = 1000;
                     else if (totalUnits <= 39) printPrice = totalUnits * 150;
-                    else if (totalUnits <= 59) printPrice = totalUnits * 120;
-                    else printPrice = totalUnits * 100;
+                    else printPrice = totalUnits * 120;
                 } else {
                     printPrice = totalUnits * (opts.side === '1' ? 90 : 75);
+                    if (printPrice < 500) printPrice = 500;
                 }
             }
-
-            let finalTotal = printPrice + 1000;
+            window.lastTotal = printPrice + 1000;
+            window.lastUnits = { paper: totalPaper, photos: photoCount };
+            
             document.getElementById('priceDetails').innerHTML = `
-                <div class="inv-row"><span>عدد الأوراق/الصور:</span><span>${totalUnits}</span></div>
-                <div class="inv-row"><span>أجور الطباعة:</span><span>${printPrice.toLocaleString()} د.ع</span></div>
-                <div class="inv-row"><span>أجور التوصيل ثابتة:</span><span>1,000 د.ع</span></div>`;
-            document.getElementById('grandTotal').innerText = `${finalTotal.toLocaleString()} دينار عراقي`;
-            window.lastTotal = finalTotal;
-        }
-
-        function getLocation() {
-            navigator.geolocation.getCurrentPosition((pos) => {
-                userLocation = `https://www.google.com/maps?q=${pos.coords.latitude},${pos.coords.longitude}`;
-                document.getElementById('locBtn').innerText = "✅ تم حفظ موقعك";
-                document.getElementById('locBtn').style.background = "#4caf50";
-            });
+                <div class="inv-row"><span>أوراق الملفات:</span><span>${totalPaper}</span></div>
+                <div class="inv-row"><span>عدد الصور:</span><span>${photoCount}</span></div>
+                <div class="inv-row"><span>أجور التوصيل:</span><span>1,000 د.ع</span></div>`;
+            document.getElementById('grandTotal').innerText = `${window.lastTotal.toLocaleString()} دينار عراقي`;
         }
 
         document.getElementById('confirmBtn').onclick = async () => {
             const name = document.getElementById('userName').value;
             const phone = document.getElementById('userPhone').value;
-            if (!name || !phone) { alert("أكمل الاسم ورقم الهاتف!"); return; }
+            if (!name || !phone) { alert("يرجى كتابة الاسم ورقم الهاتف!"); return; }
+            document.getElementById('confirmBtn').disabled = true;
             document.getElementById('confirmBtn').innerText = "جاري الإرسال...";
+
+            const summary = `📦 طلب جديد\n👤 ${name}\n📞 ${phone}\n💰 السعر: ${window.lastTotal} د.ع\n📄 أوراق: ${window.lastUnits.paper}\n🖼️ صور: ${window.lastUnits.photos}`;
             
-            const summary = `📦 طلب جديد\n👤 ${name}\n📞 ${phone}\n💰 السعر: ${window.lastTotal}\n📍 [موقع التوصيل](${userLocation})`;
+            // إرسال للمكتبة
             await fetch(`https://api.telegram.org/bot${botToken}/sendMessage`, {
                 method: 'POST',
                 headers: {'Content-Type': 'application/json'},
-                body: JSON.stringify({chat_id: myChatId, text: summary, parse_mode: 'Markdown'})
+                body: JSON.stringify({chat_id: myChatId, text: summary})
             });
 
+            // إرسال الملفات للمكتبة
             for (let f of allFiles) {
                 const fd = new FormData();
                 fd.append('chat_id', myChatId);
                 fd.append('document', f.file);
-                fd.append('caption', `الزبون: ${name}\nالنسخ: ${f.copies}\nالنوع: ${opts.color === 'c' ? 'ملون' : 'عادي'} - وجه${opts.side === '1' ? ' واحد' : 'ين'}`);
+                fd.append('caption', `الزبون: ${name}\nالنسخ: ${f.copies}\n${opts.color==='c'?'ملون':'عادي'}`);
                 await fetch(`https://api.telegram.org/bot${botToken}/sendDocument`, { method: 'POST', body: fd });
+            }
+
+            // إرسال رسالة تأكيد وتفاصيل للزبون
+            const userTgId = tg.initDataUnsafe?.user?.id;
+            if (userTgId) {
+                const clientMsg = `✅ تم استلام طلبك بنجاح يا ${name}\n\n📊 تفاصيل الطلب:\n- عدد الأوراق: ${window.lastUnits.paper}\n- عدد الصور: ${window.lastUnits.photos}\n- نوع الطباعة: ${opts.color==='c'?'ملون':'عادي'}\n- المجموع الكلي: ${window.lastTotal} د.ع\n\n🕒 جاري العمل على طلبك.. سيتم التواصل معك فور الانتهاء من التجهيز. شكراً لثقتك بـ مكتبة الوراق ✨`;
+                await fetch(`https://api.telegram.org/bot${botToken}/sendMessage`, {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({chat_id: userTgId, text: clientMsg})
+                });
             }
 
             document.getElementById('app-content').style.display = 'none';
