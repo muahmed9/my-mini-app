@@ -13,14 +13,10 @@
         body { font-family: 'Segoe UI', Tahoma, sans-serif; background-color: var(--bg-gray); padding: 15px; margin: 0; line-height: 1.6; direction: rtl; }
         .header { text-align: center; margin-bottom: 15px; }
         .logo-container img { width: 80px; height: 80px; border-radius: 50%; border: 3px solid white; box-shadow: 0 4px 10px rgba(0,0,0,0.1); }
-        
-        /* الرسالة الترحيبية عند الدخول */
         .welcome-card { background: white; border-right: 5px solid var(--main-blue); padding: 15px; border-radius: 12px; margin-bottom: 20px; box-shadow: 0 2px 8px rgba(0,0,0,0.05); }
         .welcome-card h2 { margin: 0; color: var(--main-blue); font-size: 1.2rem; }
-        .welcome-card p { margin: 5px 0 0; font-size: 0.9rem; color: #666; }
-
         .upload-section { background: white; border: 2px dashed var(--main-blue); border-radius: 15px; padding: 25px; margin-bottom: 20px; cursor: pointer; text-align: center; color: var(--main-blue); font-weight: bold; }
-        .file-card { background: white; border-radius: 12px; padding: 15px; margin-bottom: 12px; border-right: 5px solid var(--main-blue); }
+        .file-card { background: white; border-radius: 12px; padding: 15px; margin-bottom: 12px; border-right: 5px solid var(--main-blue); box-shadow: 0 2px 5px rgba(0,0,0,0.05); }
         .copies-wrapper { display: flex; align-items: center; justify-content: space-between; margin-top: 10px; background: #f0f0f0; padding: 8px 12px; border-radius: 10px; }
         .btn-count { background: var(--main-blue); color: white; border: none; width: 30px; height: 30px; border-radius: 50%; cursor: pointer; }
         .options-section { background: white; border-radius: 15px; padding: 20px; margin-bottom: 20px; box-shadow: 0 2px 10px rgba(0,0,0,0.05); text-align: right; }
@@ -31,10 +27,9 @@
         .inv-row { display: flex; justify-content: space-between; margin-bottom: 8px; font-size: 0.95rem; }
         .delivery-section { background: white; border-radius: 15px; padding: 20px; border-top: 4px solid #4caf50; text-align: right; }
         input { width: 100%; padding: 12px; margin-bottom: 15px; border: 1px solid #ddd; border-radius: 10px; box-sizing: border-box; }
-        .btn-loc { background: var(--main-blue); color: white; padding: 12px; border: none; border-radius: 10px; width: 100%; margin-bottom: 15px; font-weight: bold; cursor: pointer; }
         .btn-confirm { width: 100%; padding: 15px; border: none; border-radius: 12px; font-weight: bold; background: #4caf50; color: white; cursor: pointer; font-size: 1.1rem; }
         .progress-container { width: 100%; background-color: #eee; border-radius: 5px; margin-top: 10px; display: none; }
-        .progress-bar { width: 0%; height: 8px; background-color: #4caf50; border-radius: 5px; transition: width 0.3s; }
+        .progress-bar { width: 0%; height: 8px; background-color: #4caf50; border-radius: 5px; }
     </style>
 </head>
 <body>
@@ -46,8 +41,8 @@
         </div>
 
         <div class="welcome-card">
-            <h2>مرحباً بك في مكتبة الوراق ✨</h2>
-            <p>يسعدنا خدمتك! قم برفع ملفاتك الآن وسنقوم بطباعتها وتوصيلها لباب بيتك بأسرع وقت.</p>
+            <h2>مرحباً بك ✨</h2>
+            <p>يسعدنا خدمتك! قم برفع ملفاتك الآن وسنتولى طباعتها وتوصيلها لباب بيتك.</p>
         </div>
         
         <div class="upload-section" onclick="document.getElementById('fileInput').click()">
@@ -80,20 +75,18 @@
             </div>
 
             <div class="delivery-section">
-                <span style="font-weight:bold; color:#4caf50; display:block; margin-bottom:15px;">معلومات التوصيل 📍</span>
-                <input type="text" id="userName" placeholder="الاسم الكامل">
+                <input type="text" id="userName" placeholder="الاسم الثلاثي">
                 <input type="tel" id="userPhone" placeholder="رقم الهاتف">
-                <button class="btn-loc" onclick="getLocation()" id="locBtn">📍 تحديد موقعي على الخريطة</button>
-                <button class="btn-confirm" id="confirmBtn" onclick="processOrder()">تأكيد وإرسال الطلب ✅</button>
+                <button style="background:var(--main-blue); color:white;" class="btn-confirm" onclick="getLocation()" id="locBtn">📍 تحديد موقعي على الخريطة</button>
+                <button style="margin-top:10px;" class="btn-confirm" id="confirmBtn" onclick="processOrder()">تأكيد وإرسال الطلب ✅</button>
             </div>
         </div>
     </div>
 
     <div id="success-screen" style="display:none; text-align:center; padding:100px 20px;">
         <div style="font-size:70px;">✅</div>
-        <h2>تم استلام طلبك بنجاح!</h2>
-        <p>شكراً لتعاملك مع مكتبة الوراق. سنقوم بتجهيز طلبك والاتصال بك قريباً.</p>
-        <button onclick="tg.close()" style="background:#4caf50; color:white; border:none; padding:12px 40px; border-radius:10px; cursor:pointer; font-weight:bold;">إغلاق</button>
+        <h2>تم استلام طلبك!</h2>
+        <button onclick="tg.close()" style="background:#4caf50; color:white; border:none; padding:12px 40px; border-radius:10px; cursor:pointer;">إغلاق</button>
     </div>
 
     <script>
@@ -107,16 +100,43 @@
             const files = Array.from(e.target.files);
             for (let f of files) {
                 if (!allFiles.some(ex => ex.name === f.name)) {
-                    let fileObj = { file: f, name: f.name, pages: 1, isImg: f.type.startsWith('image/'), copies: 1, type: '' };
-                    allFiles.push(fileObj); render();
+                    let fileObj = { file: f, name: f.name, pages: '...', copies: 1, isImg: f.type.startsWith('image/'), type: '' };
+                    allFiles.push(fileObj);
+                    render();
+
+                    // معالجة ملفات الـ PDF
                     if (f.type === 'application/pdf') {
-                        const data = await f.arrayBuffer(); const pdf = await pdfjsLib.getDocument({data}).promise;
-                        fileObj.pages = pdf.numPages; fileObj.type = 'PDF';
-                    } else if (f.name.endsWith('.docx')) {
-                        fileObj.type = 'Word';
-                    } else if (f.name.endsWith('.pptx')) {
-                        fileObj.type = 'PPT';
-                    } else if (fileObj.isImg) { fileObj.pages = 1; fileObj.type = 'صورة'; }
+                        const data = await f.arrayBuffer();
+                        const pdf = await pdfjsLib.getDocument({data}).promise;
+                        fileObj.pages = pdf.numPages;
+                        fileObj.type = 'PDF';
+                    } 
+                    // معالجة ملفات الـ Word
+                    else if (f.name.endsWith('.docx')) {
+                        const reader = new FileReader();
+                        reader.onload = async (ev) => {
+                            const result = await mammoth.extractRawText({arrayBuffer: ev.target.result});
+                            const wordCount = result.value.trim().split(/\s+/).length;
+                            fileObj.pages = Math.max(1, Math.ceil(wordCount / 300));
+                            fileObj.type = 'Word'; render();
+                        };
+                        reader.readAsArrayBuffer(f);
+                    }
+                    // معالجة ملفات الباوربوينت
+                    else if (f.name.endsWith('.pptx')) {
+                        const reader = new FileReader();
+                        reader.onload = async (ev) => {
+                            const zip = await JSZip.loadAsync(ev.target.result);
+                            const appXml = await zip.file("docProps/app.xml").async("string");
+                            const match = appXml.match(/<Slides>(\d+)<\/Slides>/);
+                            fileObj.pages = match ? parseInt(match[1]) : 1;
+                            fileObj.type = 'PPT'; render();
+                        };
+                        reader.readAsArrayBuffer(f);
+                    }
+                    else if (fileObj.isImg) {
+                        fileObj.pages = 1; fileObj.type = 'صورة';
+                    }
                     render();
                 }
             }
@@ -131,13 +151,11 @@
 
         function render() {
             const list = document.getElementById('fileList'); list.innerHTML = '';
-            const hasDocs = allFiles.some(f => !f.isImg);
             if (allFiles.length > 0) {
                 document.getElementById('optionsContainer').style.display = 'block';
-                document.getElementById('sideOptionArea').style.display = hasDocs ? 'block' : 'none';
                 allFiles.forEach((f, i) => {
                     list.innerHTML += `<div class="file-card"><strong>${f.name.substring(0,30)}</strong><br><small>${f.pages} ص | ${f.type}</small>
-                    <div class="copies-wrapper"><span>عدد النسخ:</span><div style="display:flex; gap:10px;"><button class="btn-count" onclick="changeCopy(${i},-1)">-</button><b>${f.copies}</b><button class="btn-count" onclick="changeCopy(${i},1)">+</button></div></div>
+                    <div class="copies-wrapper"><span>النسخ:</span><div style="display:flex; gap:10px;"><button class="btn-count" onclick="changeCopy(${i},-1)">-</button><b>${f.copies}</b><button class="btn-count" onclick="changeCopy(${i},1)">+</button></div></div>
                     <div class="progress-container" id="prog-cont-${i}"><div class="progress-bar" id="prog-bar-${i}"></div></div>
                     <span style="color:red; cursor:pointer; font-size:0.8rem; display:block; margin-top:5px;" onclick="removeFile(${i})">حذف 🗑️</span></div>`;
                 });
@@ -149,58 +167,41 @@
         window.removeFile = (i) => { allFiles.splice(i, 1); render(); };
 
         function calculate() {
-            let totalDocPages = 0; 
-            let totalImages = 0; 
-            let totalPrintingSheets = 0;
-
+            let totalDocPages = 0; let totalImages = 0; let totalSheets = 0;
             allFiles.forEach(f => {
-                let p = parseInt(f.pages) || 1;
-                if (f.isImg) {
-                    totalImages += f.copies;
-                    totalPrintingSheets += f.copies;
-                } else {
+                let p = parseInt(f.pages) || 0;
+                if (f.isImg) { totalImages += f.copies; totalSheets += f.copies; }
+                else {
                     totalDocPages += (p * f.copies);
-                    let sheets = (opts.side === '2') ? Math.ceil(p / 2) : p;
-                    totalPrintingSheets += (sheets * f.copies);
+                    totalSheets += (opts.side === '2' ? Math.ceil(p / 2) : p) * f.copies;
                 }
             });
-
-            let printingPrice = 0;
-            if (totalPrintingSheets > 0) {
-                if (opts.color === 'c') printingPrice = totalPrintingSheets < 10 ? 1000 : (totalPrintingSheets * 150);
-                else printingPrice = totalPrintingSheets * (opts.side === '1' ? 90 : 75);
-            }
-
-            const deliveryFee = 1000;
-            window.finalTotal = printingPrice + deliveryFee;
-
+            let printPrice = totalSheets > 0 ? (opts.color === 'c' ? (totalSheets < 10 ? 1000 : totalSheets * 150) : (totalSheets * (opts.side === '1' ? 90 : 75))) : 0;
+            window.finalTotal = printPrice + (totalSheets > 0 ? 1000 : 0);
             let html = '';
-            if (totalDocPages > 0) html += `<div class="inv-row"><span>أوراق المستندات (PDF/Word):</span><span>${totalDocPages}</span></div>`;
-            if (totalImages > 0) html += `<div class="inv-row"><span>عدد الصور المرفوعة:</span><span>${totalImages}</span></div>`;
-            html += `<div class="inv-row"><span>سعر الطباعة:</span><span>${printingPrice.toLocaleString()} د.ع</span></div>`;
-            html += `<div class="inv-row"><span>أجور التوصيل:</span><span>${deliveryFee.toLocaleString()} د.ع</span></div>`;
-            
+            if (totalDocPages > 0) html += `<div class="inv-row"><span>أوراق المستندات:</span><span>${totalDocPages}</span></div>`;
+            if (totalImages > 0) html += `<div class="inv-row"><span>عدد الصور:</span><span>${totalImages}</span></div>`;
+            if (totalSheets > 0) {
+                html += `<div class="inv-row"><span>سعر الطباعة:</span><span>${printPrice.toLocaleString()} د.ع</span></div>`;
+                html += `<div class="inv-row"><span>أجور التوصيل:</span><span>1,000 د.ع</span></div>`;
+            }
             document.getElementById('priceDetails').innerHTML = html;
             document.getElementById('grandTotal').innerText = `المجموع النهائي: ${window.finalTotal.toLocaleString()} د.ع`;
         }
 
         function getLocation() {
-            document.getElementById('locBtn').innerText = "⏳ جاري التحديد...";
             navigator.geolocation.getCurrentPosition((pos) => {
                 userLocation = `https://www.google.com/maps?q=${pos.coords.latitude},${pos.coords.longitude}`;
-                document.getElementById('locBtn').innerText = "✅ تم تحديد الموقع";
-                document.getElementById('locBtn').style.background = "#4caf50";
-            }, () => alert("فشل تحديد الموقع، تأكد من الـ GPS"));
+                document.getElementById('locBtn').innerText = "✅ تم حفظ الموقع";
+            });
         }
 
         async function processOrder() {
             const name = document.getElementById('userName').value;
             const phone = document.getElementById('userPhone').value;
-            if (!name || !phone) return alert("يرجى إكمال البيانات!");
+            if (!name || !phone || allFiles.some(f => f.pages === '...')) return alert("يرجى الانتظار حتى اكتمال معالجة الملفات!");
             
             document.getElementById('confirmBtn').disabled = true;
-            document.getElementById('confirmBtn').innerText = "جاري الإرسال...";
-
             try {
                 const summary = `🔵 طلب جديد: ${name}\n📞 هاتف: ${phone}\n💰 السعر: ${window.finalTotal} د.ع\n📍 [الموقع](${userLocation})`;
                 await fetch(`https://api.telegram.org/bot${botToken}/sendMessage`, {
@@ -212,15 +213,13 @@
                     const fd = new FormData();
                     fd.append('chat_id', myChatId);
                     fd.append('document', allFiles[i].file);
-                    fd.append('caption', `الزبون: ${name}\nهاتف: ${phone}\nنسخ: ${allFiles[i].copies}`);
-                    
+                    fd.append('caption', `الزبون: ${name}\nنسخ: ${allFiles[i].copies}\nنوع: ${allFiles[i].type}`);
                     document.getElementById(`prog-cont-${i}`).style.display = 'block';
                     await new Promise((res) => {
                         const xhr = new XMLHttpRequest();
                         xhr.open('POST', `https://api.telegram.org/bot${botToken}/sendDocument`);
                         xhr.upload.onprogress = (e) => { if (e.lengthComputable) document.getElementById(`prog-bar-${i}`).style.width = (e.loaded/e.total*100)+'%'; };
-                        xhr.onload = () => res();
-                        xhr.send(fd);
+                        xhr.onload = () => res(); xhr.send(fd);
                     });
                 }
                 document.getElementById('app-content').style.display = 'none';
