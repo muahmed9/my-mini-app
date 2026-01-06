@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>مكتبة الوراق - التطبيق المصغر</title>
+    <script src="https://telegram.org/js/telegram-web-app.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.16.105/pdf.min.js"></script>
+    
+    <style>
+        body { 
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; 
+            text-align: center; 
+            padding: 20px; 
+            background-color: var(--tg-theme-bg-color, #ffffff); 
+            color: var(--tg-theme-text-color, #000000); 
+        }
+        .app-container { max-width: 500px; margin: auto; }
+        .upload-section { 
+            border: 2px dashed var(--tg-theme-button-color, #248bcf); 
+            padding: 30px; 
+            border-radius: 15px; 
+            margin-bottom: 20px;
+            cursor: pointer;
+        }
+        select, button { 
+            width: 100%; 
+            padding: 12px; 
+            margin: 10px 0; 
+            border-radius: 8px; 
+            border: 1px solid #ccc;
+            font-size: 16px;
+        }
+        button { 
+            background-color: var(--tg-theme-button-color, #248bcf); 
+            color: var(--tg-theme-button-text-color, #ffffff); 
+            border: none; 
+            font-weight: bold;
+        }
+        .invoice { 
+            background-color: rgba(0,0,0,0.05); 
+            padding: 15px; 
+            border-radius: 10px; 
+            text-align: right; 
+        }
+    </style>
+</head>
+<body>
+    <div class="app-container">
+        <h1>📚 مكتبة الوراق</h1>
+        
+        <div class="upload-section" onclick="document.getElementById('fileInput').click()">
+            <input type="file" id="fileInput" multiple accept=".pdf,image/*" style="display:none">
+            <p>📁 اضغط هنا لرفع ملفات PDF أو صور</p>
+            <p id="fileCount" style="font-size: 0.8em; color: gray;">لم يتم اختيار ملفات بعد</p>
+        </div>
+
+        <div id="results" style="display:none;">
+            <div class="invoice">
+                <h3>📊 تفاصيل الفاتورة:</h3>
+                <p id="stats">عدد الصفحات: 0 | الصور: 0</p>
+                
+                <label>اختر نوع الطباعة:</label>
+                <select id="printType">
+                    <option value="c_1">🌈 ملون - وجه واحد (150 د.ع)</option>
+                    <option value="c_2">🌈 ملون - وجهين</option>
+                    <option value="n_1">⚪ عادي - وجه واحد (90 د.ع)</option>
+                    <option value="n_2">⚪ عادي - وجهين (75 د.ع)</option>
+                </select>
+                
+                <hr>
+                <p>🚚 التوصيل: 1,000 د.ع</p>
+                <h2 id="totalPrice">المجموع: 0 د.ع</h2>
+            </div>
+            
+            <button id="sendOrder">تأكيد وإرسال الطلب 🛒</button>
+        </div>
+    </div>
+
+    <script>
+        // إخبار تليجرام أن التطبيق جاهز
+        const tg = window.Telegram.WebApp;
+        tg.ready();
+        tg.expand(); // توسيع التطبيق ليملأ الشاشة
+
+        const fileInput = document.getElementById('fileInput');
+        const printType = document.getElementById('printType');
+        let totalPages = 0;
+        let totalPhotos = 0;
+
+        // وظيفة لحساب السعر بناءً على منطق كود البايثون الخاص بك
+        function calculateFinalPrice() {
+            const type = printType.value;
+            let rawPrintPrice = 0;
+
+            if (type.startsWith('c')) {
+                // منطق الملون
+                let units = totalPhotos + (type === 'c_1' ? totalPages : Math.ceil(totalPages / 2));
+                rawPrintPrice = (units > 0 && units < 5) ? 1000 : units * 150;
+            } else {
+                // منطق العادي
+                let filePrice = type === 'n_1' ? totalPages * 90 : totalPages * 75;
+                rawPrintPrice = filePrice + (totalPhotos * 90);
+            }
+
+            // التقريب لأقرب 250 وإضافة التوصيل
+            let grandTotal = Math.ceil((rawPrintPrice + 1000) / 250) * 250;
+            document.getElementById('totalPrice').innerText = `المجموع: ${grandTotal.toLocaleString()} د.ع`;
+        }
+
+        // مراقبة تغيير الملفات
+        fileInput.addEventListener('change', async (e) => {
+            const files = e.target.files;
+            totalPages = 0;
+            totalPhotos = 0;
+
+            for (let file of files) {
+                if (file.type.startsWith('image/')) {
+                    totalPhotos++;
+                } else if (file.type === 'application/pdf') {
+                    // كود بسيط لقراءة عدد صفحات PDF
+                    const reader = new FileReader();
+                    reader.onload = async function() {
+                        const typedarray = new Uint8Array(this.result);
+                        const pdf = await pdfjsLib.getDocument(typedarray).promise;
+                        totalPages += pdf.numPages;
+                        updateUI();
+                    };
+                    reader.readAsArrayBuffer(file);
+                }
+            }
+            updateUI();
+        });
+
+        function updateUI() {
+            document.getElementById('results').style.display = 'block';
+            document.getElementById('stats').innerText = `عدد الصفحات: ${totalPages} | الصور: ${totalPhotos}`;
+            document.getElementById('fileCount').innerText = `تم اختيار ${fileInput.files.length} ملف/صورة`;
+            calculateFinalPrice();
+        }
+
+        printType.addEventListener('change', calculateFinalPrice);
+
+        // إرسال البيانات للبوت عند الضغط على الزر
+        document.getElementById('sendOrder').addEventListener('click', () => {
+            const data = {
+                pages: totalPages,
+                photos: totalPhotos,
+                type: printType.options[printType.selectedIndex].text,
+                total: document.getElementById('totalPrice').innerText
+            };
+            tg.sendData(JSON.stringify(data)); // إرسال البيانات للمحادثة
+            tg.close(); // إغلاق التطبيق
+        });
+    </script>
+</body>
+</html>
