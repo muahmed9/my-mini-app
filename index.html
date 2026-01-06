@@ -8,6 +8,7 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.16.105/pdf.min.js"></script>
     <style>
         body { font-family: sans-serif; text-align: center; padding: 20px; background-color: var(--tg-theme-bg-color); color: var(--tg-theme-text-color); }
+        .logo-container img { width: 120px; height: auto; margin-bottom: 10px; border-radius: 50%; }
         .upload-box { border: 2px dashed #248bcf; padding: 20px; border-radius: 10px; cursor: pointer; margin-bottom: 20px; }
         .file-item { background: rgba(0,0,0,0.05); margin: 10px 0; padding: 10px; border-radius: 8px; display: flex; flex-direction: column; text-align: right; }
         .file-info { display: flex; justify-content: space-between; align-items: center; width: 100%; }
@@ -20,13 +21,14 @@
         .delete-btn { background: #ff4d4d; width: auto; padding: 5px 10px; font-size: 12px; margin-right: 10px; }
         .price-row { display: flex; justify-content: space-between; font-size: 0.9em; margin: 3px 0; }
         .grand-total { color: #248bcf; font-size: 1.2em; font-weight: bold; border-top: 1px solid #ccc; padding-top: 5px; }
-        
-        /* تنسيق شريط التقدم 📊 */
         .progress-container { width: 100%; background-color: #ddd; border-radius: 5px; margin-top: 8px; display: none; }
         .progress-bar { width: 0%; height: 8px; background-color: #4caf50; border-radius: 5px; transition: width 0.3s; }
     </style>
 </head>
 <body>
+    <div class="logo-container">
+        <img src="logo.png" alt="شعار مكتبة الوراق">
+    </div>
     <h1>📚 مكتبة الوراق</h1>
     
     <div class="upload-box" onclick="document.getElementById('fileInput').click()">
@@ -38,18 +40,14 @@
 
     <div id="invoice" class="invoice-card">
         <h3>تفاصيل الطلب 📑</h3>
-        <p id="photoNote" style="color: #ff9800; font-size: 0.85em; display: none; font-weight: bold;"></p>
-
         <label>نوع الطباعة:</label>
         <select id="printType">
-            <option value="c_1">🌈 ملون - وجه واحد</option>
-            <option id="opt_c2" value="c_2">🌈 ملون - وجهين</option>
+            <option value="c">🌈 ملون</option>
             <option value="n_1">⚪ عادي - وجه واحد</option>
-            <option id="opt_n2" value="n_2">⚪ عادي - وجهين</option>
+            <option value="n_2">⚪ عادي - وجهين</option>
         </select>
 
         <div style="margin-top: 15px;">
-            <label>👤 معلومات المستلم:</label>
             <input type="text" id="userName" placeholder="الاسم الثلاثي">
             <input type="tel" id="userPhone" placeholder="رقم الهاتف">
             <button type="button" class="loc-btn" onclick="getLocation()">📍 تحديد موقع التوصيل</button>
@@ -81,14 +79,7 @@
                         const pdf = await pdfjsLib.getDocument({data}).promise;
                         p = pdf.numPages;
                     }
-                    allFiles.push({ 
-                        file: f, 
-                        name: f.name, 
-                        pages: p, 
-                        isImg: f.type.startsWith('image/'), 
-                        copies: 1, 
-                        size: f.size 
-                    });
+                    allFiles.push({ file: f, name: f.name, pages: p, isImg: f.type.startsWith('image/'), copies: 1 });
                 }
             }
             render();
@@ -101,17 +92,15 @@
                 document.getElementById('invoice').style.display = 'block';
                 allFiles.forEach((f, i) => {
                     list.innerHTML += `
-                        <div class="file-item" id="item-${i}">
+                        <div class="file-item">
                             <div class="file-info">
-                                <div style="flex:1;"><strong>${f.name.substring(0,20)}</strong><br><small>${f.pages} صفحة</small></div>
+                                <div style="flex:1;"><strong>${f.name.substring(0,20)}</strong><br><small>${f.pages} ${f.isImg ? 'صورة' : 'صفحة'}</small></div>
                                 <div>
                                     <input type="number" value="${f.copies}" min="1" onchange="updateCopies(${i}, this.value)">
                                     <button class="delete-btn" onclick="removeFile(${i})">حذف</button>
                                 </div>
                             </div>
-                            <div class="progress-container" id="prog-cont-${i}">
-                                <div class="progress-bar" id="prog-bar-${i}"></div>
-                            </div>
+                            <div class="progress-container" id="prog-cont-${i}"><div class="progress-bar" id="prog-bar-${i}"></div></div>
                         </div>`;
                 });
             } else { document.getElementById('invoice').style.display = 'none'; }
@@ -123,32 +112,54 @@
 
         function calculate() {
             const type = document.getElementById('printType').value;
-            let accumulatedUnits = 0;
+            let colorPages = 0;
+            let normalUnits = 0;
+            let photoCount = 0;
+
             allFiles.forEach(f => {
-                let fileUnits = (f.isImg || !type.endsWith('_2')) ? f.pages : Math.ceil(f.pages / 2);
-                accumulatedUnits += fileUnits * f.copies;
+                if (f.isImg) {
+                    photoCount += (1 * f.copies);
+                } else {
+                    if (type === 'c') {
+                        colorPages += (f.pages * f.copies);
+                    } else if (type === 'n_1') {
+                        normalUnits += (f.pages * f.copies);
+                    } else if (type === 'n_2') {
+                        normalUnits += (Math.ceil(f.pages / 2) * f.copies);
+                    }
+                }
             });
-            let rawPrintPrice = 0;
-            if (accumulatedUnits > 0) {
-                rawPrintPrice = type.startsWith('c') ? (accumulatedUnits < 5 ? 1000 : accumulatedUnits * 150) : accumulatedUnits * (type === 'n_1' ? 90 : 75);
-            }
-            let roundedPrint = Math.ceil(rawPrintPrice / 250) * 250;
-            lastPrices = { print: roundedPrint, delivery: 1000, total: roundedPrint + 1000 };
+
+            // حساب الملون
+            let colorPrice = colorPages > 0 ? (colorPages > 10 ? colorPages * 150 : 1000) : 0;
+            
+            // حساب العادي
+            let normalPrice = 0;
+            if (type === 'n_1') normalPrice = normalUnits * 90;
+            else if (type === 'n_2') normalPrice = normalUnits * 75;
+
+            // حساب الصور
+            let photoPrice = photoCount > 0 ? (photoCount >= 5 ? photoCount * 150 : 1000) : 0;
+
+            let printTotal = colorPrice + normalPrice + photoPrice;
+            lastPrices.print = printTotal;
+            lastPrices.total = printTotal + 1000;
+
             document.getElementById('priceDisplay').innerHTML = `
                 <div class="price-row"><span>سعر الطباعة:</span><span>${lastPrices.print.toLocaleString()} د.ع</span></div>
-                <div class="price-row"><span>أجور التوصيل:</span><span>${lastPrices.delivery.toLocaleString()} د.ع</span></div>
+                <div class="price-row"><span>أجور التوصيل:</span><span>1,000 د.ع</span></div>
                 <div class="price-row grand-total"><span>المجموع الكلي:</span><span>${lastPrices.total.toLocaleString()} د.ع</span></div>`;
         }
 
         function getLocation() {
-            const status = document.getElementById('locStatus');
             navigator.geolocation.getCurrentPosition((pos) => {
                 userLocation = `https://www.google.com/maps?q=${pos.coords.latitude},${pos.coords.longitude}`;
-                status.innerText = "✅ تم تحديد الموقع";
-            }, () => { status.innerText = "❌ فشل التحديد"; });
+                document.getElementById('locStatus').innerText = "✅ تم تحديد الموقع";
+            });
         }
 
-        // دالة الرفع مع شريط التقدم 📊
+        document.getElementById('printType').onchange = calculate;
+
         function uploadWithProgress(fObj, index, name) {
             return new Promise((resolve, reject) => {
                 const xhr = new XMLHttpRequest();
@@ -156,24 +167,13 @@
                 formData.append('chat_id', chatId);
                 formData.append('document', fObj.file);
                 formData.append('caption', `ملف: ${fObj.name}\nنسخ: ${fObj.copies}\nزبون: ${name}`);
-
-                const progCont = document.getElementById(`prog-cont-${index}`);
-                const progBar = document.getElementById(`prog-bar-${index}`);
-                progCont.style.display = 'block';
-
+                document.getElementById(`prog-cont-${index}`).style.display = 'block';
                 xhr.upload.addEventListener('progress', (e) => {
                     if (e.lengthComputable) {
-                        const percent = (e.loaded / e.total) * 100;
-                        progBar.style.width = percent + '%';
+                        document.getElementById(`prog-bar-${index}`).style.width = (e.loaded / e.total * 100) + '%';
                     }
                 });
-
-                xhr.onreadystatechange = () => {
-                    if (xhr.readyState === 4) {
-                        if (xhr.status === 200) resolve();
-                        else reject();
-                    }
-                };
+                xhr.onreadystatechange = () => { if (xhr.readyState === 4 && xhr.status === 200) resolve(); };
                 xhr.open('POST', `https://api.telegram.org/bot${botToken}/sendDocument`);
                 xhr.send(formData);
             });
@@ -183,30 +183,20 @@
             const name = document.getElementById('userName').value;
             const phone = document.getElementById('userPhone').value;
             if (!name || !phone) { alert("أكمل البيانات!"); return; }
-
             document.getElementById('confirmBtn').disabled = true;
-            document.getElementById('confirmBtn').innerText = "جاري إرسال الطلب... ⏳";
-
             try {
-                // 1. إرسال ملخص الطلب
                 const summary = `📦 طلب جديد\n👤 ${name}\n📞 ${phone}\n💰 ${lastPrices.total} د.ع\n📍 ${userLocation}`;
                 await fetch(`https://api.telegram.org/bot${botToken}/sendMessage`, {
                     method: 'POST',
                     headers: {'Content-Type': 'application/json'},
                     body: JSON.stringify({chat_id: chatId, text: summary})
                 });
-
-                // 2. إرسال الملفات مع شريط التقدم 📊
                 for (let i = 0; i < allFiles.length; i++) {
                     await uploadWithProgress(allFiles[i], i, name);
                 }
-
                 alert("✅ تم الإرسال بنجاح!");
                 tg.close();
-            } catch (e) {
-                alert("❌ فشل الإرسال");
-                document.getElementById('confirmBtn').disabled = false;
-            }
+            } catch (e) { alert("❌ فشل الإرسال"); }
         };
     </script>
 </body>
