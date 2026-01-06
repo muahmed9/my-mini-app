@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>مكتبة الوراق - النسخة النهائية</title>
+    <title>مكتبة الوراق - النسخة الاحترافية المعتمدة</title>
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.16.105/pdf.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/mammoth/1.4.21/mammoth.browser.min.js"></script>
@@ -42,7 +42,7 @@
         </div>
 
         <div class="welcome-card">
-            <h2>مرحباً بك ✨</h2>
+            <h2>مرحباً بك في مكتبة الوراق ✨</h2>
             <p>يسعدنا خدمتك! ارفع ملفاتك الآن وسنتولى طباعتها وتوصيلها لباب بيتك.</p>
         </div>
         
@@ -91,8 +91,8 @@
 
     <div id="success-screen" style="display:none; text-align:center; padding:100px 20px;">
         <div style="font-size:70px;">✅</div>
-        <h2>تم استلام طلبك!</h2>
-        <p id="successOrderId"></p>
+        <h2>تم استلام طلبك بنجاح!</h2>
+        <p id="successOrderIdDisplay" style="font-weight:bold; color:var(--main-blue);"></p>
         <button onclick="tg.close()" style="background:#4caf50; color:white; border:none; padding:12px 40px; border-radius:10px; cursor:pointer;">إغلاق</button>
     </div>
 
@@ -145,18 +145,14 @@
 
         function render() {
             const list = document.getElementById('fileList'); list.innerHTML = '';
-            
             const containsDocuments = allFiles.some(f => !f.isImg);
-            const containsImages = allFiles.some(f => f.isImg); // فحص وجود صور
+            const containsImages = allFiles.some(f => f.isImg);
             
             if (allFiles.length > 0) {
                 document.getElementById('optionsContainer').style.display = 'block';
-                
-                // إظهار خيارات الوجهين فقط إذا كان هناك مستندات
                 document.getElementById('sideOptionArea').style.display = containsDocuments ? 'block' : 'none';
-                
-                // إظهار ملاحظة الصور فور وجود أي صورة في القائمة
                 document.getElementById('photoNoticeArea').style.display = containsImages ? 'block' : 'none';
+                if(!containsDocuments) opts.side = '1';
 
                 allFiles.forEach((f, i) => {
                     list.innerHTML += `<div class="file-card"><strong>${f.name.substring(0,30)}</strong><br><small>${f.pages} ص | ${f.type}</small>
@@ -177,10 +173,8 @@
             let totalDocPages = 0, totalImages = 0, totalSheets = 0;
             allFiles.forEach(f => {
                 let p = parseInt(f.pages) || 0;
-                if (f.isImg) { 
-                    totalImages += f.copies; 
-                    totalSheets += f.copies; // الصور دائماً وجه واحد
-                } else {
+                if (f.isImg) { totalImages += f.copies; totalSheets += f.copies; }
+                else {
                     totalDocPages += (p * f.copies);
                     totalSheets += (opts.side === '2' ? Math.ceil(p / 2) : p) * f.copies;
                 }
@@ -203,6 +197,7 @@
             navigator.geolocation.getCurrentPosition((pos) => {
                 userLocation = `https://www.google.com/maps?q=${pos.coords.latitude},${pos.coords.longitude}`;
                 document.getElementById('locBtn').innerText = "✅ تم حفظ الموقع";
+                document.getElementById('locBtn').style.background = "#4caf50";
             }, (err) => alert("يرجى تفعيل الـ GPS"));
         }
 
@@ -215,17 +210,20 @@
             document.getElementById('confirmBtn').disabled = true;
 
             try {
+                // 1. إرسال الملخص للمكتبة
                 const summary = `🆕 طلب جديد #${orderId}\n👤 الزبون: ${name}\n📞 هاتف: ${phone}\n💰 السعر: ${window.finalTotal.toLocaleString()} د.ع\n📍 [الموقع](${userLocation})`;
                 await fetch(`https://api.telegram.org/bot${botToken}/sendMessage`, {
                     method: 'POST', headers: {'Content-Type': 'application/json'},
                     body: JSON.stringify({chat_id: myChatId, text: summary, parse_mode: 'Markdown'})
                 });
 
+                // 2. إرسال الملفات مع رقم الهاتف في الوصف
                 for (let i = 0; i < allFiles.length; i++) {
                     const fd = new FormData();
                     fd.append('chat_id', myChatId);
                     fd.append('document', allFiles[i].file);
-                    fd.append('caption', `الطلب: #${orderId}\nالزبون: ${name}\nالنسخ: ${allFiles[i].copies}\nالنوع: ${allFiles[i].type}`);
+                    fd.append('caption', `الطلب: #${orderId}\nالزبون: ${name}\n📞 هاتف: ${phone}\nنسخ: ${allFiles[i].copies}\nنوع: ${allFiles[i].type}`);
+                    
                     document.getElementById(`prog-cont-${i}`).style.display = 'block';
                     await new Promise((res) => {
                         const xhr = new XMLHttpRequest();
@@ -235,16 +233,17 @@
                     });
                 }
 
+                // 3. إرسال رسالة التأكيد للزبون
                 const userId = tg.initDataUnsafe?.user?.id;
                 if (userId) {
-                    const clientMsg = `✅ تم استلام طلبك رقم #${orderId} بنجاح!\n\n💰 المجموع: ${window.finalTotal.toLocaleString()} د.ع\n📞 رقمك المسجل: ${phone}\nللتواصل والاستفسار: 07752564099\nشكراً لتعاملك مع مكتبة الوراق ✨`;
+                    const clientMsg = `✅ تم استلام طلبك رقم #${orderId} بنجاح!\n\n💰 المجموع: ${window.finalTotal.toLocaleString()} د.ع\n📞 رقمك المسجل: ${phone}\n📞 للتواصل والاستفسار: 07752564099\n\nشكراً لثقتك بمكتبة الوراق ✨`;
                     await fetch(`https://api.telegram.org/bot${botToken}/sendMessage`, {
                         method: 'POST', headers: {'Content-Type': 'application/json'},
                         body: JSON.stringify({chat_id: userId, text: clientMsg})
                     });
                 }
 
-                document.getElementById('successOrderId').innerText = "رقم طلبك هو: #" + orderId;
+                document.getElementById('successOrderIdDisplay').innerText = "رقم طلبك هو: #" + orderId;
                 document.getElementById('app-content').style.display = 'none';
                 document.getElementById('success-screen').style.display = 'block';
             } catch (e) { alert("حدث خطأ!"); document.getElementById('confirmBtn').disabled = false; }
