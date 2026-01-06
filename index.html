@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>مكتبة الوراق - النسخة الاحترافية المضمونة</title>
+    <title>مكتبة الوراق - النسخة النهائية</title>
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.16.105/pdf.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/mammoth/1.4.21/mammoth.browser.min.js"></script>
@@ -63,7 +63,7 @@
                 </div>
                 
                 <div id="sideOptionArea">
-                    <p>طريقة الطباعة:</p>
+                    <p>طريقة الطباعة للمستندات:</p>
                     <div class="option-group">
                         <button class="opt-choice active" id="btn-1" onclick="setOpt('side','1')">📄 وجه واحد</button>
                         <button class="opt-choice" id="btn-2" onclick="setOpt('side','2')">📖 وجهين</button>
@@ -71,7 +71,7 @@
                 </div>
                 
                 <div id="photoNoticeArea" style="display:none;">
-                    <div class="photo-notice">⚠️ الصور تُطبع وجه واحد فقط.</div>
+                    <div class="photo-notice">⚠️ تنبيه: الصور تُطبع وجه واحد فقط دائماً.</div>
                 </div>
             </div>
 
@@ -146,21 +146,17 @@
         function render() {
             const list = document.getElementById('fileList'); list.innerHTML = '';
             
-            // فحص وجود أي ملف ليس صورة
             const containsDocuments = allFiles.some(f => !f.isImg);
+            const containsImages = allFiles.some(f => f.isImg); // فحص وجود صور
             
             if (allFiles.length > 0) {
                 document.getElementById('optionsContainer').style.display = 'block';
                 
-                // التحكم في خيارات الوجه والوجهين بناءً على الفحص المباشر
-                if (containsDocuments) {
-                    document.getElementById('sideOptionArea').style.display = 'block';
-                    document.getElementById('photoNoticeArea').style.display = 'none';
-                } else {
-                    document.getElementById('sideOptionArea').style.display = 'none';
-                    document.getElementById('photoNoticeArea').style.display = 'block';
-                    opts.side = '1'; // إجبار النظام على حساب وجه واحد للصور
-                }
+                // إظهار خيارات الوجهين فقط إذا كان هناك مستندات
+                document.getElementById('sideOptionArea').style.display = containsDocuments ? 'block' : 'none';
+                
+                // إظهار ملاحظة الصور فور وجود أي صورة في القائمة
+                document.getElementById('photoNoticeArea').style.display = containsImages ? 'block' : 'none';
 
                 allFiles.forEach((f, i) => {
                     list.innerHTML += `<div class="file-card"><strong>${f.name.substring(0,30)}</strong><br><small>${f.pages} ص | ${f.type}</small>
@@ -183,7 +179,7 @@
                 let p = parseInt(f.pages) || 0;
                 if (f.isImg) { 
                     totalImages += f.copies; 
-                    totalSheets += f.copies; 
+                    totalSheets += f.copies; // الصور دائماً وجه واحد
                 } else {
                     totalDocPages += (p * f.copies);
                     totalSheets += (opts.side === '2' ? Math.ceil(p / 2) : p) * f.copies;
@@ -229,7 +225,7 @@
                     const fd = new FormData();
                     fd.append('chat_id', myChatId);
                     fd.append('document', allFiles[i].file);
-                    fd.append('caption', `الطلب: #${orderId}\nالزبون: ${name}\n📞 هاتف: ${phone}\nالنسخ: ${allFiles[i].copies}\nالنوع: ${allFiles[i].type}`);
+                    fd.append('caption', `الطلب: #${orderId}\nالزبون: ${name}\nالنسخ: ${allFiles[i].copies}\nالنوع: ${allFiles[i].type}`);
                     document.getElementById(`prog-cont-${i}`).style.display = 'block';
                     await new Promise((res) => {
                         const xhr = new XMLHttpRequest();
@@ -241,7 +237,7 @@
 
                 const userId = tg.initDataUnsafe?.user?.id;
                 if (userId) {
-                    const clientMsg = `✅ تم استلام طلبك رقم #${orderId} بنجاح!\n\n💰 المجموع: ${window.finalTotal.toLocaleString()} د.ع\n📞 رقمك المسجل: ${phone}\n\nشكراً لتعاملك مع مكتبة الوراق ✨`;
+                    const clientMsg = `✅ تم استلام طلبك رقم #${orderId} بنجاح!\n\n💰 المجموع: ${window.finalTotal.toLocaleString()} د.ع\n📞 رقمك المسجل: ${phone}\nللتواصل والاستفسار: 07752564099\nشكراً لتعاملك مع مكتبة الوراق ✨`;
                     await fetch(`https://api.telegram.org/bot${botToken}/sendMessage`, {
                         method: 'POST', headers: {'Content-Type': 'application/json'},
                         body: JSON.stringify({chat_id: userId, text: clientMsg})
