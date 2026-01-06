@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>مكتبة الوراق - النسخة الاحترافية المعتمدة</title>
+    <title>مكتبة الوراق - النسخة النهائية المعتمدة</title>
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.16.105/pdf.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/mammoth/1.4.21/mammoth.browser.min.js"></script>
@@ -34,25 +34,20 @@
     </style>
 </head>
 <body>
-
     <div id="app-content">
         <div class="header">
             <div class="logo-container"><img src="logo.png" onerror="this.style.display='none'"></div>
             <h1>مكتبة الوراق</h1>
         </div>
-
         <div class="welcome-card">
             <h2>مرحباً بك في مكتبة الوراق ✨</h2>
-            <p>يسعدنا خدمتك! ارفع ملفاتك الآن وسنتولى طباعتها وتوصيلها لباب بيتك.</p>
+            <p>ارفع ملفاتك الآن وسنتولى طباعتها وتوصيلها لباب بيتك.</p>
         </div>
-        
         <div class="upload-section" onclick="document.getElementById('fileInput').click()">
             <input type="file" id="fileInput" multiple accept=".pdf,image/*,.docx,.pptx" style="display:none">
             📁 اضغط هنا لإضافة ملفاتك أو صورك
         </div>
-
         <div id="fileList"></div>
-
         <div id="optionsContainer" style="display:none;">
             <div class="options-section">
                 <span style="font-weight:bold; color:var(--main-blue); display:block; margin-bottom:10px;">إعدادات الطباعة ⚙️</span>
@@ -61,7 +56,6 @@
                     <button class="opt-choice active" id="btn-c" onclick="setOpt('color','c')">🌈 ملون</button>
                     <button class="opt-choice" id="btn-n" onclick="setOpt('color','n')">⚪ عادي</button>
                 </div>
-                
                 <div id="sideOptionArea">
                     <p>طريقة الطباعة للمستندات:</p>
                     <div class="option-group">
@@ -69,17 +63,14 @@
                         <button class="opt-choice" id="btn-2" onclick="setOpt('side','2')">📖 وجهين</button>
                     </div>
                 </div>
-                
                 <div id="photoNoticeArea" style="display:none;">
                     <div class="photo-notice">⚠️ تنبيه: الصور تُطبع وجه واحد فقط دائماً.</div>
                 </div>
             </div>
-
             <div class="invoice-card">
                 <div id="priceDetails"></div>
                 <div id="grandTotal" style="font-weight:bold; font-size:1.4rem; border-top:1px solid #555; padding-top:10px; margin-top:10px; color:#4caf50; text-align:center;">0 د.ع</div>
             </div>
-
             <div class="delivery-section">
                 <input type="text" id="userName" placeholder="الاسم الكامل">
                 <input type="tel" id="userPhone" placeholder="رقم الهاتف">
@@ -88,7 +79,6 @@
             </div>
         </div>
     </div>
-
     <div id="success-screen" style="display:none; text-align:center; padding:100px 20px;">
         <div style="font-size:70px;">✅</div>
         <h2>تم استلام طلبك بنجاح!</h2>
@@ -110,7 +100,6 @@
                     let fileObj = { file: f, name: f.name, pages: '...', copies: 1, isImg: f.type.startsWith('image/'), type: '' };
                     allFiles.push(fileObj);
                     render();
-
                     if (f.type === 'application/pdf') {
                         const data = await f.arrayBuffer();
                         const pdf = await pdfjsLib.getDocument({data}).promise;
@@ -147,22 +136,18 @@
             const list = document.getElementById('fileList'); list.innerHTML = '';
             const containsDocuments = allFiles.some(f => !f.isImg);
             const containsImages = allFiles.some(f => f.isImg);
-            
             if (allFiles.length > 0) {
                 document.getElementById('optionsContainer').style.display = 'block';
                 document.getElementById('sideOptionArea').style.display = containsDocuments ? 'block' : 'none';
                 document.getElementById('photoNoticeArea').style.display = containsImages ? 'block' : 'none';
                 if(!containsDocuments) opts.side = '1';
-
                 allFiles.forEach((f, i) => {
                     list.innerHTML += `<div class="file-card"><strong>${f.name.substring(0,30)}</strong><br><small>${f.pages} ص | ${f.type}</small>
                     <div class="copies-wrapper"><span>النسخ:</span><div style="display:flex; gap:10px;"><button class="btn-count" onclick="changeCopy(${i},-1)">-</button><b>${f.copies}</b><button class="btn-count" onclick="changeCopy(${i},1)">+</button></div></div>
                     <div class="progress-container" id="prog-cont-${i}"><div class="progress-bar" id="prog-bar-${i}"></div></div>
                     <span style="color:red; cursor:pointer; font-size:0.8rem; display:block; margin-top:8px;" onclick="removeFile(${i})">حذف 🗑️</span></div>`;
                 });
-            } else {
-                document.getElementById('optionsContainer').style.display = 'none';
-            }
+            } else document.getElementById('optionsContainer').style.display = 'none';
             calculate();
         }
 
@@ -181,7 +166,6 @@
             });
             let printPrice = totalSheets > 0 ? (opts.color === 'c' ? (totalSheets < 10 ? 1000 : totalSheets * 150) : (totalSheets * (opts.side === '1' ? 90 : 75))) : 0;
             window.finalTotal = printPrice + (totalSheets > 0 ? 1000 : 0);
-            
             let html = '';
             if (totalDocPages > 0) html += `<div class="inv-row"><span>أوراق المستندات:</span><span>${totalDocPages}</span></div>`;
             if (totalImages > 0) html += `<div class="inv-row"><span>عدد الصور:</span><span>${totalImages}</span></div>`;
@@ -205,24 +189,26 @@
             const name = document.getElementById('userName').value;
             const phone = document.getElementById('userPhone').value;
             if (!name || !phone || allFiles.some(f => f.pages === '...')) return alert("يرجى إكمال البيانات!");
-            
             const orderId = "WR-" + Math.floor(1000 + Math.random() * 9000);
             document.getElementById('confirmBtn').disabled = true;
 
             try {
-                // 1. إرسال الملخص للمكتبة
-                const summary = `🆕 طلب جديد #${orderId}\n👤 الزبون: ${name}\n📞 هاتف: ${phone}\n💰 السعر: ${window.finalTotal.toLocaleString()} د.ع\n📍 [الموقع](${userLocation})`;
+                const colorLabel = opts.color === 'c' ? '🌈 ملون' : '⚪ عادي';
+                const sideLabel = opts.side === '1' ? '📄 وجه واحد' : '📖 وجهين';
+                
+                const summary = `🆕 طلب جديد #${orderId}\n👤 الزبون: ${name}\n📞 هاتف: ${phone}\n💰 السعر: ${window.finalTotal.toLocaleString()} د.ع\n🎨 النوع: ${colorLabel}\n📖 الطباعة: ${sideLabel}\n📍 [الموقع](${userLocation})`;
                 await fetch(`https://api.telegram.org/bot${botToken}/sendMessage`, {
                     method: 'POST', headers: {'Content-Type': 'application/json'},
                     body: JSON.stringify({chat_id: myChatId, text: summary, parse_mode: 'Markdown'})
                 });
 
-                // 2. إرسال الملفات مع رقم الهاتف في الوصف
                 for (let i = 0; i < allFiles.length; i++) {
+                    const f = allFiles[i];
+                    const fSide = f.isImg ? '📄 وجه واحد (صورة)' : sideLabel;
                     const fd = new FormData();
                     fd.append('chat_id', myChatId);
-                    fd.append('document', allFiles[i].file);
-                    fd.append('caption', `الطلب: #${orderId}\nالزبون: ${name}\n📞 هاتف: ${phone}\nنسخ: ${allFiles[i].copies}\nنوع: ${allFiles[i].type}`);
+                    fd.append('document', f.file);
+                    fd.append('caption', `الطلب: #${orderId}\nالزبون: ${name}\n📞 هاتف: ${phone}\n🎨 الألوان: ${colorLabel}\n📖 الطباعة: ${fSide}\n🔢 النسخ: ${f.copies}`);
                     
                     document.getElementById(`prog-cont-${i}`).style.display = 'block';
                     await new Promise((res) => {
@@ -233,16 +219,14 @@
                     });
                 }
 
-                // 3. إرسال رسالة التأكيد للزبون
                 const userId = tg.initDataUnsafe?.user?.id;
                 if (userId) {
-                    const clientMsg = `✅ تم استلام طلبك رقم #${orderId} بنجاح!\n\n💰 المجموع: ${window.finalTotal.toLocaleString()} د.ع\n📞 رقمك المسجل: ${phone}\n📞 للتواصل والاستفسار: 07752564099\n\nشكراً لثقتك بمكتبة الوراق ✨`;
+                    const clientMsg = `✅ تم استلام طلبك رقم #${orderId} بنجاح!\n\n💰 المجموع: ${window.finalTotal.toLocaleString()} د.ع\n🎨 النوع: ${colorLabel}\n📖 الطباعة: ${sideLabel}\n📞 للتواصل: 07752564099\n\nشكراً لتعاملك مع مكتبة الوراق ✨`;
                     await fetch(`https://api.telegram.org/bot${botToken}/sendMessage`, {
                         method: 'POST', headers: {'Content-Type': 'application/json'},
                         body: JSON.stringify({chat_id: userId, text: clientMsg})
                     });
                 }
-
                 document.getElementById('successOrderIdDisplay').innerText = "رقم طلبك هو: #" + orderId;
                 document.getElementById('app-content').style.display = 'none';
                 document.getElementById('success-screen').style.display = 'block';
