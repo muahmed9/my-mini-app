@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>مكتبة الوراق - النسخة النهائية المعتمدة</title>
+    <title>مكتبة الوراق - النسخة الاحترافية المعتمدة</title>
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.16.105/pdf.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/mammoth/1.4.21/mammoth.browser.min.js"></script>
@@ -189,25 +189,29 @@
             const name = document.getElementById('userName').value;
             const phone = document.getElementById('userPhone').value;
             if (!name || !phone || allFiles.some(f => f.pages === '...')) return alert("يرجى إكمال البيانات!");
+            
             const orderId = "WR-" + Math.floor(1000 + Math.random() * 9000);
             document.getElementById('confirmBtn').disabled = true;
 
+            const colorLabel = opts.color === 'c' ? 'ملون' : 'عادي';
+            const sideLabel = opts.side === '1' ? 'وجه واحد' : 'وجهين';
+
             try {
-                const colorLabel = opts.color === 'c' ? '🌈 ملون' : '⚪ عادي';
-                const sideLabel = opts.side === '1' ? '📄 وجه واحد' : '📖 وجهين';
-                
+                // 1. إرسال الملخص للمكتبة
                 const summary = `🆕 طلب جديد #${orderId}\n👤 الزبون: ${name}\n📞 هاتف: ${phone}\n💰 السعر: ${window.finalTotal.toLocaleString()} د.ع\n🎨 النوع: ${colorLabel}\n📖 الطباعة: ${sideLabel}\n📍 [الموقع](${userLocation})`;
                 await fetch(`https://api.telegram.org/bot${botToken}/sendMessage`, {
                     method: 'POST', headers: {'Content-Type': 'application/json'},
                     body: JSON.stringify({chat_id: myChatId, text: summary, parse_mode: 'Markdown'})
                 });
 
+                // 2. إرسال الملفات (تم إصلاح الـ Caption هنا)
                 for (let i = 0; i < allFiles.length; i++) {
                     const f = allFiles[i];
-                    const fSide = f.isImg ? '📄 وجه واحد (صورة)' : sideLabel;
+                    const fSide = f.isImg ? 'وجه واحد (صورة)' : sideLabel;
                     const fd = new FormData();
                     fd.append('chat_id', myChatId);
                     fd.append('document', f.file);
+                    // هنا قمت بإضافة التفاصيل لكل ملف بشكل صريح
                     fd.append('caption', `الطلب: #${orderId}\nالزبون: ${name}\n📞 هاتف: ${phone}\n🎨 الألوان: ${colorLabel}\n📖 الطباعة: ${fSide}\n🔢 النسخ: ${f.copies}`);
                     
                     document.getElementById(`prog-cont-${i}`).style.display = 'block';
@@ -219,6 +223,7 @@
                     });
                 }
 
+                // 3. إرسال رسالة التأكيد للزبون
                 const userId = tg.initDataUnsafe?.user?.id;
                 if (userId) {
                     const clientMsg = `✅ تم استلام طلبك رقم #${orderId} بنجاح!\n\n💰 المجموع: ${window.finalTotal.toLocaleString()} د.ع\n🎨 النوع: ${colorLabel}\n📖 الطباعة: ${sideLabel}\n📞 للتواصل: 07752564099\n\nشكراً لتعاملك مع مكتبة الوراق ✨`;
@@ -227,6 +232,7 @@
                         body: JSON.stringify({chat_id: userId, text: clientMsg})
                     });
                 }
+
                 document.getElementById('successOrderIdDisplay').innerText = "رقم طلبك هو: #" + orderId;
                 document.getElementById('app-content').style.display = 'none';
                 document.getElementById('success-screen').style.display = 'block';
