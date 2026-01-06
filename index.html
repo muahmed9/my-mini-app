@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>مكتبة الوراق - النسخة الاحترافية</title>
+    <title>مكتبة الوراق - النسخة الاحترافية الكاملة</title>
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.16.105/pdf.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/mammoth/1.4.21/mammoth.browser.min.js"></script>
@@ -11,16 +11,16 @@
     <style>
         :root { --main-blue: #248bcf; --light-blue: #eef7fd; --text-dark: #333; --bg-gray: #f9f9f9; }
         body { font-family: 'Segoe UI', sans-serif; background-color: var(--bg-gray); color: var(--text-dark); padding: 15px; margin: 0; line-height: 1.6; }
-        .header { margin-bottom: 20px; text-align: center; }
+        .header { margin-bottom: 20px; text-align: center; padding: 10px 0; }
         .logo-container img { width: 85px; height: 85px; border-radius: 50%; border: 3px solid white; box-shadow: 0 4px 10px rgba(0,0,0,0.1); }
         .welcome-msg { background: white; padding: 15px; border-radius: 12px; margin-bottom: 20px; border-right: 5px solid var(--main-blue); box-shadow: 0 2px 5px rgba(0,0,0,0.05); text-align: right; }
-        .upload-section { background: white; border: 2px dashed var(--main-blue); border-radius: 15px; padding: 25px; margin-bottom: 20px; cursor: pointer; text-align: center; }
+        .upload-section { background: white; border: 2px dashed var(--main-blue); border-radius: 15px; padding: 25px; margin-bottom: 20px; cursor: pointer; text-align: center; font-weight: bold; color: var(--main-blue); }
         .file-card { background: white; border-radius: 12px; padding: 15px; margin-bottom: 12px; box-shadow: 0 2px 5px rgba(0,0,0,0.05); border-right: 5px solid var(--main-blue); text-align: right; }
         .copies-wrapper { display: flex; align-items: center; justify-content: space-between; margin-top: 10px; background: var(--bg-gray); padding: 8px 12px; border-radius: 10px; }
         .btn-count { background: var(--main-blue); color: white; border: none; width: 30px; height: 30px; border-radius: 50%; cursor: pointer; font-weight: bold; }
         .options-section { background: white; border-radius: 15px; padding: 20px; margin-bottom: 20px; box-shadow: 0 2px 10px rgba(0,0,0,0.05); text-align: right; }
         .option-group { display: flex; gap: 10px; margin-bottom: 15px; }
-        .opt-choice { flex: 1; border: 1px solid #ddd; border-radius: 10px; padding: 12px; cursor: pointer; background: white; font-weight: bold; transition: 0.3s; text-align: center; }
+        .opt-choice { flex: 1; border: 1px solid #ddd; border-radius: 10px; padding: 12px; cursor: pointer; background: white; font-weight: bold; text-align: center; }
         .opt-choice.active { background: var(--main-blue); color: white; border-color: var(--main-blue); }
         .invoice-card { background: #333; color: white; border-radius: 15px; padding: 20px; margin-bottom: 20px; text-align: right; }
         .inv-row { display: flex; justify-content: space-between; margin-bottom: 8px; font-size: 0.9rem; }
@@ -28,7 +28,7 @@
         input { width: 100%; padding: 12px; margin-bottom: 15px; border: 1px solid #ddd; border-radius: 10px; box-sizing: border-box; background: var(--bg-gray); }
         .btn-loc { background: var(--main-blue); color: white; padding: 12px; border: none; border-radius: 10px; width: 100%; margin-bottom: 15px; font-weight: bold; cursor: pointer; }
         .btn-confirm { width: 100%; padding: 15px; border: none; border-radius: 12px; font-weight: bold; background: #4caf50; color: white; cursor: pointer; font-size: 1.1rem; }
-        .progress-container { width: 100%; background-color: #ddd; border-radius: 5px; margin-top: 10px; display: none; }
+        .progress-container { width: 100%; background-color: #eee; border-radius: 5px; margin-top: 10px; display: none; }
         .progress-bar { width: 0%; height: 8px; background-color: #4caf50; border-radius: 5px; transition: width 0.3s; }
     </style>
 </head>
@@ -38,22 +38,25 @@
             <div class="logo-container"><img src="logo.png" onerror="this.style.display='none'"></div>
             <h1>مكتبة الوراق</h1>
         </div>
-        <div class="welcome-msg"><h3>مرحباً بك ✨</h3><p>ارفع ملفاتك (PDF, Word, PPT, صور) وسنقوم بطباعتها.</p></div>
+        <div class="welcome-msg">
+            <h3 style="margin:0; color:var(--main-blue);">مرحباً بك ✨</h3>
+            <p style="margin:5px 0 0; font-size:0.85rem; color:#666;">ارفع ملفاتك (PDF, Word, PPT, صور) وسنتولى الباقي.</p>
+        </div>
         <div class="upload-section" onclick="document.getElementById('fileInput').click()">
             <input type="file" id="fileInput" multiple accept=".pdf,image/*,.docx,.pptx" style="display:none">
-            <p>📁 اضغط لإضافة الملفات</p>
+            📁 اضغط هنا لإضافة الملفات
         </div>
         <div id="fileList"></div>
         <div id="optionsContainer" style="display:none;">
             <div class="options-section">
-                <span style="font-weight:bold; color:var(--main-blue)">إعدادات الطباعة ⚙️</span>
-                <p>نوع الألوان:</p>
+                <span style="font-weight:bold; color:var(--main-blue); display:block; margin-bottom:10px;">إعدادات الطباعة ⚙️</span>
+                <p style="font-size:0.9rem;">نوع الألوان:</p>
                 <div class="option-group">
                     <button class="opt-choice active" id="btn-c" onclick="setOpt('color','c')">🌈 ملون</button>
                     <button class="opt-choice" id="btn-n" onclick="setOpt('color','n')">⚪ عادي</button>
                 </div>
                 <div id="sideOptionArea">
-                    <p>طريقة الطباعة:</p>
+                    <p style="font-size:0.9rem;">طريقة الطباعة:</p>
                     <div class="option-group">
                         <button class="opt-choice active" id="btn-1" onclick="setOpt('side','1')">📄 وجه واحد</button>
                         <button class="opt-choice" id="btn-2" onclick="setOpt('side','2')">📖 وجهين</button>
@@ -69,19 +72,19 @@
                 <input type="text" id="userName" placeholder="الاسم الثلاثي">
                 <input type="tel" id="userPhone" placeholder="رقم الهاتف">
                 <button class="btn-loc" onclick="getLocation()" id="locBtn">📍 تحديد موقعي على الخريطة</button>
-                <button class="btn-confirm" id="confirmBtn" onclick="handleOrder()">تأكيد وإرسال الطلب ✅</button>
+                <button class="btn-confirm" id="confirmBtn" onclick="sendOrderProcess()">تأكيد وإرسال الطلب ✅</button>
             </div>
         </div>
     </div>
-    <div id="success-screen" style="display:none; text-align:center; padding:100px 20px;">
-        <div style="font-size:70px;">✅</div><h2>تم استلام طلبك!</h2><button onclick="tg.close()" style="background:#4caf50; color:white; border:none; padding:12px 40px; border-radius:10px;">إغلاق</button>
+    <div id="success-screen" style="display:none; text-align:center; padding:80px 20px;">
+        <div style="font-size:70px;">✅</div>
+        <h2>تم استلام طلبك!</h2>
+        <button onclick="tg.close()" style="background:#4caf50; color:white; border:none; padding:12px 40px; border-radius:10px; font-weight:bold; cursor:pointer;">إغلاق</button>
     </div>
 
     <script>
-        const tg = window.Telegram.WebApp;
-        tg.ready();
-        let allFiles = [];
-        let opts = { color: 'c', side: '1' };
+        const tg = window.Telegram.WebApp; tg.ready();
+        let allFiles = []; let opts = { color: 'c', side: '1' };
         let userLocation = "لم يتم التحديد";
         const botToken = '8234329147:AAF_jZ23898e_xJivB23HQe_gRnknFBuXnA';
         const myChatId = '7618746133';
@@ -91,22 +94,18 @@
             for (let f of files) {
                 if (!allFiles.some(ex => ex.name === f.name)) {
                     let fileObj = { file: f, name: f.name, pages: '...', isImg: f.type.startsWith('image/'), copies: 1, type: '' };
-                    allFiles.push(fileObj);
-                    render();
+                    allFiles.push(fileObj); render();
                     if (f.type === 'application/pdf') {
-                        const data = await f.arrayBuffer();
-                        const pdf = await pdfjsLib.getDocument({data}).promise;
+                        const data = await f.arrayBuffer(); const pdf = await pdfjsLib.getDocument({data}).promise;
                         fileObj.pages = pdf.numPages; fileObj.type = 'PDF';
                     } else if (f.name.endsWith('.docx')) {
-                        const reader = new FileReader();
-                        reader.onload = async (ev) => {
+                        const reader = new FileReader(); reader.onload = async (ev) => {
                             const res = await mammoth.extractRawText({arrayBuffer: ev.target.result});
                             fileObj.pages = Math.max(1, Math.ceil(res.value.trim().split(/\s+/).length / 300));
                             fileObj.type = 'Word'; render();
                         }; reader.readAsArrayBuffer(f);
                     } else if (f.name.endsWith('.pptx')) {
-                        const reader = new FileReader();
-                        reader.onload = async (ev) => {
+                        const reader = new FileReader(); reader.onload = async (ev) => {
                             const zip = await JSZip.loadAsync(ev.target.result);
                             const xml = await zip.file("docProps/app.xml").async("string");
                             const m = xml.match(/<Slides>(\d+)<\/Slides>/);
@@ -122,8 +121,7 @@
             opts[type] = val;
             document.querySelectorAll(`.opt-choice[id^="btn-${type === 'color' ? 'c' : '1'}"]`).forEach(el => el.classList.remove('active'));
             document.querySelectorAll(`.opt-choice[id^="btn-${type === 'color' ? 'n' : '2'}"]`).forEach(el => el.classList.remove('active'));
-            document.getElementById(`btn-${val}`).classList.add('active');
-            calculate();
+            document.getElementById(`btn-${val}`).classList.add('active'); calculate();
         }
 
         function render() {
@@ -133,10 +131,8 @@
                 document.getElementById('optionsContainer').style.display = 'block';
                 document.getElementById('sideOptionArea').style.display = hasDocs ? 'block' : 'none';
                 allFiles.forEach((f, i) => {
-                    list.innerHTML += `<div class="file-card"><strong>${f.name.substring(0,30)}</strong><br><small>${f.pages} ص | ${f.type}</small>
-                    <div class="copies-wrapper"><span>عدد النسخ:</span><div style="display:flex; gap:10px; align-items:center;"><button class="btn-count" onclick="changeCopy(${i},-1)">-</button><b>${f.copies}</b><button class="btn-count" onclick="changeCopy(${i},1)">+</button></div></div>
-                    <div class="progress-container" id="prog-cont-${i}"><div class="progress-bar" id="prog-bar-${i}"></div></div>
-                    <span style="color:red; cursor:pointer; font-size:0.8rem; display:block; margin-top:8px;" onclick="removeFile(${i})">حذف 🗑️</span></div>`;
+                    let label = f.pages === '...' ? 'جاري الحساب...' : `${f.pages} ${f.type === 'PPT' ? 'سلايد' : 'ص'}`;
+                    list.innerHTML += `<div class="file-card"><strong>${f.name.substring(0,30)}</strong><br><small>${label} | ${f.type}</small><div class="copies-wrapper"><span>كم نسخة؟</span><div style="display:flex; gap:12px; align-items:center;"><button class="btn-count" onclick="changeCopy(${i},-1)">-</button><b>${f.copies}</b><button class="btn-count" onclick="changeCopy(${i},1)">+</button></div></div><div class="progress-container" id="prog-cont-${i}"><div class="progress-bar" id="prog-bar-${i}"></div></div><span style="color:red; cursor:pointer; font-size:0.8rem; display:block; margin-top:8px;" onclick="removeFile(${i})">حذف 🗑️</span></div>`;
                 });
             } else document.getElementById('optionsContainer').style.display = 'none';
             calculate();
@@ -150,10 +146,9 @@
             allFiles.forEach(f => {
                 let pNum = parseInt(f.pages) || 0;
                 if (f.isImg) photoCount += f.copies;
-                else { totalPaper += (opts.side === '2' ? Math.ceil(pNum / 2) : pNum) * f.copies; }
+                else totalPaper += (opts.side === '2' ? Math.ceil(pNum / 2) : pNum) * f.copies;
             });
-            let totalUnits = totalPaper + photoCount;
-            let pPrice = 0;
+            let totalUnits = totalPaper + photoCount; let pPrice = 0;
             if (totalUnits > 0) {
                 if (opts.color === 'c') pPrice = totalUnits < 10 ? 1000 : (totalUnits <= 39 ? totalUnits * 150 : totalUnits * 120);
                 else pPrice = totalUnits * (opts.side === '1' ? 90 : 75);
@@ -168,66 +163,41 @@
         }
 
         function getLocation() {
+            document.getElementById('locBtn').innerText = "⏳ جاري التحديد...";
             navigator.geolocation.getCurrentPosition((pos) => {
                 userLocation = `https://www.google.com/maps?q=${pos.coords.latitude},${pos.coords.longitude}`;
                 document.getElementById('locBtn').innerText = "✅ تم تحديد الموقع";
                 document.getElementById('locBtn').style.background = "#4caf50";
-            }, () => alert("يرجى تفعيل الـ GPS"));
+            }, () => { alert("يرجى تفعيل الـ GPS والسماح بالوصول"); document.getElementById('locBtn').innerText = "📍 حاول مجدداً"; });
         }
 
-        async function uploadSingleFile(fObj, index, name, phone) {
-            const fd = new FormData();
-            fd.append('chat_id', myChatId);
-            fd.append('document', fObj.file);
-            fd.append('caption', `👤 الزبون: ${name}\n📞 هاتف: ${phone}\n🔢 نسخ: ${fObj.copies}\n🎨 نوع: ${opts.color==='c'?'ملون':'عادي'} - ${opts.side==='1'?'وجه':'وجهين'}`);
-            
-            document.getElementById(`prog-cont-${index}`).style.display = 'block';
+        async function uploadWithProgress(fObj, index, name, phone) {
             return new Promise((resolve, reject) => {
-                const xhr = new XMLHttpRequest();
-                xhr.upload.onprogress = (e) => {
-                    if (e.lengthComputable) {
-                        const pct = (e.loaded / e.total * 100);
-                        document.getElementById(`prog-bar-${index}`).style.width = pct + '%';
-                    }
-                };
-                xhr.onload = () => resolve();
-                xhr.onerror = () => reject();
-                xhr.open('POST', `https://api.telegram.org/bot${botToken}/sendDocument`);
-                xhr.send(fd);
+                const fd = new FormData(); fd.append('chat_id', myChatId); fd.append('document', fObj.file);
+                fd.append('caption', `👤: ${name}\n📞: ${phone}\n🔢: ${fObj.copies}\n🎨: ${opts.color==='c'?'ملون':'عادي'} - ${opts.side==='1'?'وجه':'وجهين'}`);
+                document.getElementById(`prog-cont-${index}`).style.display = 'block';
+                const xhr = new XMLHttpRequest(); xhr.open('POST', `https://api.telegram.org/bot${botToken}/sendDocument`);
+                xhr.upload.onprogress = (e) => { if (e.lengthComputable) document.getElementById(`prog-bar-${index}`).style.width = (e.loaded/e.total*100)+'%'; };
+                xhr.onload = () => xhr.status === 200 ? resolve() : reject();
+                xhr.onerror = () => reject(); xhr.send(fd);
             });
         }
 
-        async function handleOrder() {
-            const name = document.getElementById('userName').value;
-            const phone = document.getElementById('userPhone').value;
-            if (!name || !phone) return alert("أكمل البيانات!");
-            document.getElementById('confirmBtn').disabled = true;
-
+        async function sendOrderProcess() {
+            const name = document.getElementById('userName').value; const phone = document.getElementById('userPhone').value;
+            if (!name || !phone) return alert("أكمل البيانات!"); document.getElementById('confirmBtn').disabled = true;
             try {
-                // إرسال الملخص أولاً
-                const summary = `🔵 بداية طلب: ${name}\n📞 هاتف: ${phone}\n💰 السعر: ${window.lastTotal.toLocaleString()} د.ع\n📍 ${userLocation}`;
                 await fetch(`https://api.telegram.org/bot${botToken}/sendMessage`, {
-                    method: 'POST',
-                    headers: {'Content-Type': 'application/json'},
-                    body: JSON.stringify({chat_id: myChatId, text: summary})
+                    method: 'POST', headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({chat_id: myChatId, text: `🔵 طلب جديد: ${name}\n📞 هاتف: ${phone}\n💰: ${window.lastTotal}\n📍 ${userLocation}`})
                 });
-
-                // إرسال الملفات بالترتيب
-                for (let i = 0; i < allFiles.length; i++) {
-                    await uploadSingleFile(allFiles[i], i, name, phone);
-                }
-
-                // إشعار الزبون والانتهاء
+                for (let i = 0; i < allFiles.length; i++) await uploadWithProgress(allFiles[i], i, name, phone);
                 const userTgId = tg.initDataUnsafe?.user?.id;
-                if (userTgId) {
-                    await fetch(`https://api.telegram.org/bot${botToken}/sendMessage`, {
-                        method: 'POST',
-                        headers: {'Content-Type': 'application/json'},
-                        body: JSON.stringify({chat_id: userTgId, text: `✅ تم استلام طلبك يا ${name}\nالمجموع: ${window.lastTotal} د.ع`})
-                    });
-                }
-                document.getElementById('app-content').style.display = 'none';
-                document.getElementById('success-screen').style.display = 'block';
+                if (userTgId) await fetch(`https://api.telegram.org/bot${botToken}/sendMessage`, {
+                    method: 'POST', headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({chat_id: userTgId, text: `✅ تم استلام طلبك يا ${name}\nالمجموع: ${window.lastTotal} د.ع\nسنتواصل معك فور التجهيز.`})
+                });
+                document.getElementById('app-content').style.display = 'none'; document.getElementById('success-screen').style.display = 'block';
             } catch (e) { alert("حدث خطأ في الإرسال"); document.getElementById('confirmBtn').disabled = false; }
         }
     </script>
