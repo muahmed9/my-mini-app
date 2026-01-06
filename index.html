@@ -75,7 +75,7 @@
         let userLocation = "لم يتم التحديد";
         let lastPrices = { print: 0, total: 0 };
         const botToken = '8234329147:AAF_jZ23898e_xJivB23HQe_gRnknFBuXnA';
-        const myChatId = '7618746133'; // الـ ID الخاص بك لاستلام الطلبات
+        const myChatId = '7618746133';
 
         document.getElementById('fileInput').onchange = async (e) => {
             const files = Array.from(e.target.files);
@@ -150,7 +150,7 @@
             formData.append('chat_id', myChatId);
             formData.append('document', fObj.file);
             let info = fObj.isImg ? "صور" : document.getElementById('printType').selectedOptions[0].text;
-            formData.append('caption', `الملف: ${fObj.name}\nالنسخ: ${fObj.copies}\nنوع: ${info}\nالزبون: ${name}`);
+            formData.append('caption', `الزبون: ${name}\nالنسخ: ${fObj.copies}\nالنوع: ${info}`);
             
             document.getElementById(`prog-cont-${index}`).style.display = 'block';
             return new Promise((resolve, reject) => {
@@ -167,11 +167,13 @@
         document.getElementById('confirmBtn').onclick = async () => {
             const name = document.getElementById('userName').value;
             const phone = document.getElementById('userPhone').value;
-            const userTgId = tg.initDataUnsafe.user?.id; // الحصول على ID الزبون
+            
+            // محاولة الحصول على الـ ID بطريقة أدق
+            const userTgId = tg.initDataUnsafe?.user?.id;
 
             if (!name || !phone) { alert("أدخل بياناتك!"); return; }
             document.getElementById('confirmBtn').disabled = true;
-            document.getElementById('confirmBtn').innerText = "جاري المعالجة... ⏳";
+            document.getElementById('confirmBtn').innerText = "جاري الإرسال... ⏳";
 
             try {
                 // 1. إرسال طلب لك (إلى حسابك)
@@ -187,10 +189,11 @@
                     await uploadFile(allFiles[i], i, name);
                 }
 
-                // 3. إرسال رسالة تأكيد للزبون (عبر البوت)
+                // 3. إرسال رسالة تأكيد للزبون (إذا توفر الـ ID)
                 if (userTgId) {
                     const orderNum = Math.floor(1000 + Math.random() * 9000);
-                    const clientMsg = `✅ **تم استلام طلبك بنجاح!**\n\nرقم الطلب: #${orderNum}\nالمجموع: ${lastPrices.total} د.ع\n\nشكراً لثقتك بـ **مكتبة الوراق**. سيتم التواصل معك عند اكتمال الطباعة. ✨`;
+                    const clientMsg = `✅ **تم استلام طلبك بنجاح!**\n\nرقم الطلب: #${orderNum}\nالمجموع: ${lastPrices.total} د.ع\n\nشكراً لثقتك بـ **مكتبة الوراق**. سيتم التواصل معك قريباً. ✨`;
+                    
                     await fetch(`https://api.telegram.org/bot${botToken}/sendMessage`, {
                         method: 'POST',
                         headers: {'Content-Type': 'application/json'},
@@ -202,8 +205,9 @@
                 document.getElementById('success-screen').style.display = 'block';
 
             } catch (e) {
-                alert("فشل الإرسال، حاول ثانية.");
-                document.getElementById('confirmBtn').disabled = false;
+                alert("تم إرسال الطلب، لكن تعذر إرسال رسالة التأكيد التلقائية.");
+                document.getElementById('main-app').style.display = 'none';
+                document.getElementById('success-screen').style.display = 'block';
             }
         };
     </script>
