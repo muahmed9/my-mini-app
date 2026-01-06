@@ -23,11 +23,12 @@
         .grand-total { color: #248bcf; font-size: 1.2em; font-weight: bold; border-top: 1px solid #ccc; padding-top: 5px; }
         .progress-container { width: 100%; background-color: #ddd; border-radius: 5px; margin-top: 8px; display: none; }
         .progress-bar { width: 0%; height: 8px; background-color: #4caf50; border-radius: 5px; transition: width 0.3s; }
+        #printOptionsArea { margin-top: 10px; }
     </style>
 </head>
 <body>
     <div class="logo-container">
-        <img src="./logo.png" alt="شعار مكتبة الوراق" onerror="console.log('لم يتم العثور على الصورة')">
+        <img src="logo.png" alt="شعار مكتبة الوراق" onerror="this.style.display='none'">
     </div>
     <h1>📚 مكتبة الوراق</h1>
     
@@ -40,13 +41,20 @@
 
     <div id="invoice" class="invoice-card">
         <h3>تفاصيل الطلب 📑</h3>
-        <label>نوع الطباعة:</label>
-        <select id="printType">
-            <option value="c_1">🌈 ملون - وجه واحد</option>
-            <option value="c_2">🌈 ملون - وجهين</option>
-            <option value="n_1">⚪ عادي - وجه واحد</option>
-            <option value="n_2">⚪ عادي - وجهين</option>
-        </select>
+        
+        <p id="photoNote" style="color: #ff9800; font-size: 0.9em; display: none; font-weight: bold; background: #fff3e0; padding: 8px; border-radius: 5px; border-right: 4px solid #ff9800;">
+            ⚠️ التنبيه: الصور تطبع وجه واحد فقط.
+        </p>
+
+        <div id="printOptionsArea">
+            <label>نوع الطباعة للملفات:</label>
+            <select id="printType">
+                <option value="c_1">🌈 ملون - وجه واحد</option>
+                <option value="c_2">🌈 ملون - وجهين</option>
+                <option value="n_1">⚪ عادي - وجه واحد</option>
+                <option value="n_2">⚪ عادي - وجهين</option>
+            </select>
+        </div>
 
         <div style="margin-top: 15px;">
             <input type="text" id="userName" placeholder="الاسم الثلاثي">
@@ -89,8 +97,29 @@
         function render() {
             const list = document.getElementById('fileList');
             list.innerHTML = '';
+            
+            const hasImages = allFiles.some(f => f.isImg);
+            const hasPDFs = allFiles.some(f => !f.isImg);
+            
+            const photoNote = document.getElementById('photoNote');
+            const printOptionsArea = document.getElementById('printOptionsArea');
+
             if (allFiles.length > 0) {
                 document.getElementById('invoice').style.display = 'block';
+                
+                // التحكم في ظهور الملاحظة والخيارات
+                if (hasImages && !hasPDFs) {
+                    photoNote.style.display = "block";
+                    printOptionsArea.style.display = "none";
+                } else if (hasImages && hasPDFs) {
+                    photoNote.style.display = "block";
+                    photoNote.innerText = "💡 ملاحظة: الصور تطبع وجه واحد، والخيارات أدناه للملفات فقط.";
+                    printOptionsArea.style.display = "block";
+                } else {
+                    photoNote.style.display = "none";
+                    printOptionsArea.style.display = "block";
+                }
+
                 allFiles.forEach((f, i) => {
                     list.innerHTML += `
                         <div class="file-item">
@@ -121,26 +150,14 @@
                 if (f.isImg) {
                     photoCount += (1 * f.copies);
                 } else {
-                    // حساب الوحدات (الأوراق) بناءً على وجه واحد أو وجهين
                     let units = type.endsWith('_2') ? Math.ceil(f.pages / 2) : f.pages;
-                    
-                    if (type.startsWith('c')) {
-                        colorUnits += (units * f.copies);
-                    } else {
-                        normalUnits += (units * f.copies);
-                    }
+                    if (type.startsWith('c')) colorUnits += (units * f.copies);
+                    else normalUnits += (units * f.copies);
                 }
             });
 
-            // 1. حساب الملون (بناءً على الوحدات/الأوراق)
             let colorPrice = colorUnits > 0 ? (colorUnits > 10 ? colorUnits * 150 : 1000) : 0;
-            
-            // 2. حساب العادي (90 للوجه، 75 للوجهين لكل وحدة)
-            let normalPrice = 0;
-            if (type === 'n_1') normalPrice = normalUnits * 90;
-            else if (type === 'n_2') normalPrice = normalUnits * 75;
-
-            // 3. حساب الصور
+            let normalPrice = (type === 'n_1') ? normalUnits * 90 : (type === 'n_2' ? normalUnits * 75 : 0);
             let photoPrice = photoCount > 0 ? (photoCount >= 5 ? photoCount * 150 : 1000) : 0;
 
             let printTotal = colorPrice + normalPrice + photoPrice;
@@ -168,7 +185,8 @@
                 const formData = new FormData();
                 formData.append('chat_id', chatId);
                 formData.append('document', fObj.file);
-                formData.append('caption', `ملف: ${fObj.name}\nنسخ: ${fObj.copies}\nنوع: ${document.getElementById('printType').selectedOptions[0].text}\nزبون: ${name}`);
+                let currentType = fObj.isImg ? "صور (وجه واحد)" : document.getElementById('printType').selectedOptions[0].text;
+                formData.append('caption', `ملف: ${fObj.name}\nنسخ: ${fObj.copies}\nنوع: ${currentType}\nزبون: ${name}`);
                 document.getElementById(`prog-cont-${index}`).style.display = 'block';
                 xhr.upload.addEventListener('progress', (e) => {
                     if (e.lengthComputable) {
@@ -203,4 +221,3 @@
     </script>
 </body>
 </html>
-
