@@ -3,13 +3,14 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>مكتبة الوراق - النسخة النهائية</title>
+    <title>مكتبة الوراق - النسخة الاحترافية</title>
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.16.105/pdf.min.js"></script>
     <style>
         body { font-family: sans-serif; text-align: center; padding: 20px; background-color: var(--tg-theme-bg-color); color: var(--tg-theme-text-color); }
         .upload-box { border: 2px dashed #248bcf; padding: 20px; border-radius: 10px; cursor: pointer; margin-bottom: 20px; }
-        .file-item { background: rgba(0,0,0,0.05); margin: 10px 0; padding: 10px; border-radius: 8px; display: flex; justify-content: space-between; align-items: center; text-align: right; }
+        .file-item { background: rgba(0,0,0,0.05); margin: 10px 0; padding: 10px; border-radius: 8px; display: flex; flex-direction: column; text-align: right; }
+        .file-info { display: flex; justify-content: space-between; align-items: center; width: 100%; }
         .invoice-card { background: rgba(0,0,0,0.08); padding: 15px; border-radius: 10px; display: none; text-align: right; margin-top: 20px; }
         input[type="number"], input[type="text"], input[type="tel"] { padding: 10px; border-radius: 8px; border: 1px solid #ccc; margin: 5px 0; width: 90%; box-sizing: border-box; }
         input[type="number"] { width: 60px; text-align: center; }
@@ -19,6 +20,10 @@
         .delete-btn { background: #ff4d4d; width: auto; padding: 5px 10px; font-size: 12px; margin-right: 10px; }
         .price-row { display: flex; justify-content: space-between; font-size: 0.9em; margin: 3px 0; }
         .grand-total { color: #248bcf; font-size: 1.2em; font-weight: bold; border-top: 1px solid #ccc; padding-top: 5px; }
+        
+        /* تنسيق شريط التقدم 📊 */
+        .progress-container { width: 100%; background-color: #ddd; border-radius: 5px; margin-top: 8px; display: none; }
+        .progress-bar { width: 0%; height: 8px; background-color: #4caf50; border-radius: 5px; transition: width 0.3s; }
     </style>
 </head>
 <body>
@@ -63,7 +68,6 @@
         let userLocation = "لم يتم التحديد";
         let lastPrices = { print: 0, delivery: 1000, total: 0 };
 
-        // التوكين والمعرف الخاص بك
         const botToken = '8234329147:AAF_jZ23898e_xJivB23HQe_gRnknFBuXnA';
         const chatId = '7618746133';
 
@@ -78,7 +82,7 @@
                         p = pdf.numPages;
                     }
                     allFiles.push({ 
-                        file: f, // تخزين الملف الحقيقي للإرسال
+                        file: f, 
                         name: f.name, 
                         pages: p, 
                         isImg: f.type.startsWith('image/'), 
@@ -93,35 +97,20 @@
         function render() {
             const list = document.getElementById('fileList');
             list.innerHTML = '';
-            const hasImages = allFiles.some(f => f.isImg);
-            const hasPDFs = allFiles.some(f => !f.isImg);
-            const photoNote = document.getElementById('photoNote');
-            const optC2 = document.getElementById('opt_c2');
-            const optN2 = document.getElementById('opt_n2');
-            const printSelect = document.getElementById('printType');
-
             if (allFiles.length > 0) {
                 document.getElementById('invoice').style.display = 'block';
-                if (hasImages && !hasPDFs) {
-                    photoNote.innerText = "⚠️ التنبيه: الصور تطبع وجه واحد فقط.";
-                    photoNote.style.display = "block";
-                    optC2.style.display = "none";
-                    optN2.style.display = "none";
-                    if (printSelect.value.endsWith('_2')) printSelect.value = printSelect.value.replace('_2', '_1');
-                } else {
-                    photoNote.style.display = hasImages ? "block" : "none";
-                    if (hasImages) photoNote.innerText = "💡 ملاحظة: الصور تطبع وجه واحد.";
-                    optC2.style.display = "block";
-                    optN2.style.display = "block";
-                }
-
                 allFiles.forEach((f, i) => {
                     list.innerHTML += `
-                        <div class="file-item">
-                            <div style="flex:1;"><strong>${f.name.substring(0,20)}</strong><br><small>${f.pages} ${f.isImg ? 'صورة' : 'صفحة'}</small></div>
-                            <div>
-                                <input type="number" value="${f.copies}" min="1" onchange="updateCopies(${i}, this.value)">
-                                <button class="delete-btn" onclick="removeFile(${i})">حذف</button>
+                        <div class="file-item" id="item-${i}">
+                            <div class="file-info">
+                                <div style="flex:1;"><strong>${f.name.substring(0,20)}</strong><br><small>${f.pages} صفحة</small></div>
+                                <div>
+                                    <input type="number" value="${f.copies}" min="1" onchange="updateCopies(${i}, this.value)">
+                                    <button class="delete-btn" onclick="removeFile(${i})">حذف</button>
+                                </div>
+                            </div>
+                            <div class="progress-container" id="prog-cont-${i}">
+                                <div class="progress-bar" id="prog-bar-${i}"></div>
                             </div>
                         </div>`;
                 });
@@ -132,81 +121,91 @@
         window.updateCopies = (i, v) => { allFiles[i].copies = parseInt(v) || 1; calculate(); };
         window.removeFile = (i) => { allFiles.splice(i, 1); render(); };
 
-        function getLocation() {
-            const status = document.getElementById('locStatus');
-            if (navigator.geolocation) {
-                status.innerText = "جاري التحديد... ⏳";
-                navigator.geolocation.getCurrentPosition((pos) => {
-                    userLocation = `https://www.google.com/maps?q=${pos.coords.latitude},${pos.coords.longitude}`;
-                    status.innerText = "✅ تم تحديد الموقع بنجاح";
-                }, () => { status.innerText = "❌ فشل التحديد، فعل GPS"; });
-            }
-        }
-
         function calculate() {
             const type = document.getElementById('printType').value;
             let accumulatedUnits = 0;
-
             allFiles.forEach(f => {
                 let fileUnits = (f.isImg || !type.endsWith('_2')) ? f.pages : Math.ceil(f.pages / 2);
                 accumulatedUnits += fileUnits * f.copies;
             });
-
             let rawPrintPrice = 0;
             if (accumulatedUnits > 0) {
-                if (type.startsWith('c')) {
-                    rawPrintPrice = (accumulatedUnits < 5) ? 1000 : accumulatedUnits * 150;
-                } else {
-                    rawPrintPrice = accumulatedUnits * (type === 'n_1' ? 90 : 75);
-                }
+                rawPrintPrice = type.startsWith('c') ? (accumulatedUnits < 5 ? 1000 : accumulatedUnits * 150) : accumulatedUnits * (type === 'n_1' ? 90 : 75);
             }
-
             let roundedPrint = Math.ceil(rawPrintPrice / 250) * 250;
             lastPrices = { print: roundedPrint, delivery: 1000, total: roundedPrint + 1000 };
-
             document.getElementById('priceDisplay').innerHTML = `
                 <div class="price-row"><span>سعر الطباعة:</span><span>${lastPrices.print.toLocaleString()} د.ع</span></div>
                 <div class="price-row"><span>أجور التوصيل:</span><span>${lastPrices.delivery.toLocaleString()} د.ع</span></div>
-                <div class="price-row grand-total"><span>المجموع الكلي:</span><span>${lastPrices.total.toLocaleString()} د.ع</span></div>
-            `;
+                <div class="price-row grand-total"><span>المجموع الكلي:</span><span>${lastPrices.total.toLocaleString()} د.ع</span></div>`;
         }
 
-        document.getElementById('printType').onchange = calculate;
+        function getLocation() {
+            const status = document.getElementById('locStatus');
+            navigator.geolocation.getCurrentPosition((pos) => {
+                userLocation = `https://www.google.com/maps?q=${pos.coords.latitude},${pos.coords.longitude}`;
+                status.innerText = "✅ تم تحديد الموقع";
+            }, () => { status.innerText = "❌ فشل التحديد"; });
+        }
+
+        // دالة الرفع مع شريط التقدم 📊
+        function uploadWithProgress(fObj, index, name) {
+            return new Promise((resolve, reject) => {
+                const xhr = new XMLHttpRequest();
+                const formData = new FormData();
+                formData.append('chat_id', chatId);
+                formData.append('document', fObj.file);
+                formData.append('caption', `ملف: ${fObj.name}\nنسخ: ${fObj.copies}\nزبون: ${name}`);
+
+                const progCont = document.getElementById(`prog-cont-${index}`);
+                const progBar = document.getElementById(`prog-bar-${index}`);
+                progCont.style.display = 'block';
+
+                xhr.upload.addEventListener('progress', (e) => {
+                    if (e.lengthComputable) {
+                        const percent = (e.loaded / e.total) * 100;
+                        progBar.style.width = percent + '%';
+                    }
+                });
+
+                xhr.onreadystatechange = () => {
+                    if (xhr.readyState === 4) {
+                        if (xhr.status === 200) resolve();
+                        else reject();
+                    }
+                };
+                xhr.open('POST', `https://api.telegram.org/bot${botToken}/sendDocument`);
+                xhr.send(formData);
+            });
+        }
 
         document.getElementById('confirmBtn').onclick = async () => {
             const name = document.getElementById('userName').value;
             const phone = document.getElementById('userPhone').value;
-            const btn = document.getElementById('confirmBtn');
+            if (!name || !phone) { alert("أكمل البيانات!"); return; }
 
-            if (!name || !phone) { alert("يرجى إكمال الاسم والهاتف!"); return; }
-
-            btn.innerText = "جاري الإرسال... ⏳";
-            btn.disabled = true;
+            document.getElementById('confirmBtn').disabled = true;
+            document.getElementById('confirmBtn').innerText = "جاري إرسال الطلب... ⏳";
 
             try {
-                // 1. إرسال الملخص النصي
-                const summary = `📦 **طلب جديد**\n👤 الاسم: ${name}\n📞 الهاتف: ${phone}\n💰 المجموع: ${lastPrices.total} د.ع\n📍 الموقع: ${userLocation}`;
+                // 1. إرسال ملخص الطلب
+                const summary = `📦 طلب جديد\n👤 ${name}\n📞 ${phone}\n💰 ${lastPrices.total} د.ع\n📍 ${userLocation}`;
                 await fetch(`https://api.telegram.org/bot${botToken}/sendMessage`, {
                     method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ chat_id: chatId, text: summary, parse_mode: 'Markdown' })
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({chat_id: chatId, text: summary})
                 });
 
-                // 2. إرسال الملفات
-                for (let fObj of allFiles) {
-                    let formData = new FormData();
-                    formData.append('chat_id', chatId);
-                    formData.append('document', fObj.file);
-                    formData.append('caption', `ملف: ${fObj.name}\nنسخ: ${fObj.copies}\nصفحات: ${fObj.pages}`);
-                    await fetch(`https://api.telegram.org/bot${botToken}/sendDocument`, { method: 'POST', body: formData });
+                // 2. إرسال الملفات مع شريط التقدم 📊
+                for (let i = 0; i < allFiles.length; i++) {
+                    await uploadWithProgress(allFiles[i], i, name);
                 }
 
-                alert("✅ تم إرسال طلبك والملفات بنجاح!");
+                alert("✅ تم الإرسال بنجاح!");
                 tg.close();
             } catch (e) {
-                alert("❌ فشل الإرسال، تحقق من الإنترنت.");
-                btn.innerText = "إرسال الطلب النهائي 🛒";
-                btn.disabled = false;
+                alert("❌ فشل الإرسال");
+                document.getElementById('confirmBtn').disabled = false;
             }
         };
     </script>
