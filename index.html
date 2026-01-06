@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>مكتبة الوراق - الحساب الموحد</title>
+    <title>مكتبة الوراق - طلب متكامل</title>
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.16.105/pdf.min.js"></script>
     <style>
@@ -11,10 +11,15 @@
         .upload-box { border: 2px dashed #248bcf; padding: 20px; border-radius: 10px; cursor: pointer; margin-bottom: 20px; }
         .file-item { background: rgba(0,0,0,0.05); margin: 10px 0; padding: 10px; border-radius: 8px; display: flex; justify-content: space-between; align-items: center; text-align: right; }
         .invoice-card { background: rgba(0,0,0,0.08); padding: 15px; border-radius: 10px; display: none; text-align: right; margin-top: 20px; }
-        input[type="number"] { width: 55px; padding: 5px; border-radius: 5px; border: 1px solid #ccc; text-align: center; }
-        select, button { width: 100%; padding: 12px; margin: 10px 0; border-radius: 8px; border: none; font-size: 16px; }
-        button { background: #248bcf; color: white; font-weight: bold; cursor: pointer; }
+        input[type="number"], input[type="text"], input[type="tel"] { padding: 10px; border-radius: 8px; border: 1px solid #ccc; margin: 5px 0; width: 90%; }
+        input[type="number"] { width: 55px; text-align: center; }
+        select, button { width: 100%; padding: 12px; margin: 10px 0; border-radius: 8px; border: none; font-size: 16px; font-weight: bold; cursor: pointer; }
+        button { background: #248bcf; color: white; }
+        .loc-btn { background: #4caf50; font-size: 14px; }
         .delete-btn { background: #ff4d4d; width: auto; padding: 5px 10px; font-size: 12px; margin-right: 10px; }
+        .price-details { border-top: 1px solid #ccc; margin-top: 10px; padding-top: 10px; }
+        .price-row { display: flex; justify-content: space-between; font-size: 0.9em; margin: 3px 0; }
+        .grand-total { color: #248bcf; font-size: 1.2em; font-weight: bold; }
     </style>
 </head>
 <body>
@@ -28,18 +33,27 @@
     <div id="fileList"></div>
 
     <div id="invoice" class="invoice-card">
-        <label>نوع الطباعة (للكل):</label>
+        <h3>تفاصيل الطلب 📑</h3>
+        <label>نوع الطباعة:</label>
         <select id="printType">
             <option value="c_1">🌈 ملون - وجه واحد</option>
             <option value="c_2">🌈 ملون - وجهين</option>
             <option value="n_1">⚪ عادي - وجه واحد</option>
             <option value="n_2">⚪ عادي - وجهين</option>
         </select>
-        
-        <hr>
-        <h2 id="finalPrice">السعر الإجمالي: 0 د.ع</h2>
-        <p style="font-size: 0.8em; color: gray;">* سيتم إضافة 1,000 د.ع للتوصيل لاحقاً</p>
-        <button id="confirmBtn">تأكيد الطلب 🛒</button>
+
+        <div style="margin-top: 15px;">
+            <label>👤 معلومات المستلم:</label>
+            <input type="text" id="userName" placeholder="الاسم الثلاثي">
+            <input type="tel" id="userPhone" placeholder="رقم الهاتف">
+            <button type="button" class="loc-btn" onclick="getLocation()">📍 تحديد موقع التوصيل</button>
+            <p id="locStatus" style="font-size: 0.8em; color: #4caf50;">الموقع غير محدد</p>
+        </div>
+
+        <div class="price-details" id="priceDisplay">
+            </div>
+
+        <button id="confirmBtn" style="margin-top: 20px; background: #248bcf;">إرسال الطلب النهائي 🛒</button>
     </div>
 
     <script>
@@ -47,11 +61,13 @@
         tg.ready();
 
         let allFiles = [];
+        let userLocation = "لم يتم التحديد";
+        let lastPrices = { print: 0, delivery: 1000, total: 0 };
 
         document.getElementById('fileInput').onchange = async (e) => {
-            const newFiles = Array.from(e.target.files);
-            for (let f of newFiles) {
-                if (!allFiles.some(item => item.name === f.name && item.size === f.size)) {
+            const files = Array.from(e.target.files);
+            for (let f of files) {
+                if (!allFiles.some(ex => ex.name === f.name && ex.size === f.size)) {
                     let p = 1;
                     if (f.type === 'application/pdf') {
                         const data = await f.arrayBuffer();
@@ -69,14 +85,13 @@
             list.innerHTML = '';
             if (allFiles.length > 0) {
                 document.getElementById('invoice').style.display = 'block';
-                allFiles.forEach((f, index) => {
+                allFiles.forEach((f, i) => {
                     list.innerHTML += `
                         <div class="file-item">
-                            <div style="flex:1;"><strong>${f.name.substring(0,20)}</strong><br><small>${f.pages} ${f.isImg ? 'صورة' : 'صفحة'}</small></div>
+                            <div style="flex:1;"><strong>${f.name.substring(0,15)}...</strong><br><small>${f.pages} ${f.isImg ? 'صورة' : 'صفحة'}</small></div>
                             <div>
-                                <label>النسخ:</label>
-                                <input type="number" value="${f.copies}" min="1" onchange="updateCopies(${index}, this.value)">
-                                <button class="delete-btn" onclick="removeFile(${index})">حذف</button>
+                                <input type="number" value="${f.copies}" min="1" onchange="updateCopies(${i}, this.value)">
+                                <button class="delete-btn" onclick="removeFile(${i})">حذف</button>
                             </div>
                         </div>`;
                 });
@@ -87,44 +102,65 @@
         window.updateCopies = (i, v) => { allFiles[i].copies = parseInt(v) || 1; calculate(); };
         window.removeFile = (i) => { allFiles.splice(i, 1); render(); };
 
+        function getLocation() {
+            const status = document.getElementById('locStatus');
+            if (navigator.geolocation) {
+                status.innerText = "جاري التحديد... ⏳";
+                navigator.geolocation.getCurrentPosition((pos) => {
+                    userLocation = `https://www.google.com/maps?q=${pos.coords.latitude},${pos.coords.longitude}`;
+                    status.innerText = "✅ تم تحديد الموقع بنجاح";
+                }, () => { status.innerText = "❌ فشل التحديد، فعل GPS"; });
+            }
+        }
+
         function calculate() {
             const type = document.getElementById('printType').value;
-            let totalColorUnits = 0;
-            let totalNormalFilePages = 0;
-            let totalNormalPhotos = 0;
+            let colorU = 0, normalP = 0, normalImg = 0;
 
             allFiles.forEach(f => {
                 if (type.startsWith('c')) {
-                    // حساب الوحدات الملونة (صور + صفحات ملفات)
-                    let fileUnits = (type === 'c_1' ? f.pages : Math.ceil(f.pages / 2));
-                    totalColorUnits += (f.isImg ? 1 : fileUnits) * f.copies;
+                    let units = (type === 'c_1' ? f.pages : Math.ceil(f.pages/2));
+                    colorU += (f.isImg ? 1 : units) * f.copies;
                 } else {
-                    // حساب العادي
-                    if (f.isImg) totalNormalPhotos += (1 * f.copies);
-                    else totalNormalFilePages += (f.pages * f.copies);
+                    if (f.isImg) normalImg += f.copies;
+                    else normalP += f.pages * f.copies;
                 }
             });
 
-            let rawPrice = 0;
+            let printPrice = 0;
             if (type.startsWith('c')) {
-                // تطبيق قاعدة الحد الأدنى 1000 للملون
-                rawPrice = (totalColorUnits > 0 && totalColorUnits < 5) ? 1000 : totalColorUnits * 150;
+                printPrice = (colorU > 0 && colorU < 5) ? 1000 : colorU * 150;
             } else {
-                // حساب العادي: 90 للوجه و 75 للوجهين
-                let filePrice = (type === 'n_1' ? totalNormalFilePages * 90 : totalNormalFilePages * 75);
-                rawPrice = filePrice + (totalNormalPhotos * 90);
+                let pRate = (type === 'n_1' ? 90 : 75);
+                printPrice = (normalP * pRate) + (normalImg * 90);
             }
 
-            // التقريب لأقرب 250
-            let rounded = Math.ceil(rawPrice / 250) * 250;
-            document.getElementById('finalPrice').innerText = `السعر الإجمالي: ${rounded.toLocaleString()} د.ع`;
+            let rounded = Math.ceil(printPrice / 250) * 250;
+            lastPrices = { print: rounded, delivery: 1000, total: rounded + 1000 };
+
+            document.getElementById('priceDisplay').innerHTML = `
+                <div class="price-row"><span>سعر الطباعة:</span><span>${lastPrices.print.toLocaleString()} د.ع</span></div>
+                <div class="price-row"><span>أجور التوصيل:</span><span>${lastPrices.delivery.toLocaleString()} د.ع</span></div>
+                <div class="price-row grand-total"><span>المجموع الكلي:</span><span>${lastPrices.total.toLocaleString()} د.ع</span></div>
+            `;
         }
 
         document.getElementById('printType').onchange = calculate;
 
         document.getElementById('confirmBtn').onclick = () => {
-            const summary = allFiles.map(f => `${f.name} (نسخ: ${f.copies})`).join('\n');
-            tg.sendData(JSON.stringify({ details: summary, total: document.getElementById('finalPrice').innerText }));
+            const name = document.getElementById('userName').value;
+            const phone = document.getElementById('userPhone').value;
+
+            if (!name || !phone) { alert("يرجى إكمال الاسم والهاتف!"); return; }
+
+            const summary = allFiles.map(f => `- ${f.name} (${f.copies} نسخة)`).join('\n');
+            tg.sendData(JSON.stringify({
+                name: name,
+                phone: phone,
+                location: userLocation,
+                order: summary,
+                total: lastPrices.total + " د.ع"
+            }));
             tg.close();
         };
     </script>
