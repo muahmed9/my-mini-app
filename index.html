@@ -9,107 +9,76 @@
     <style>
         :root { --main-blue: #248bcf; --light-blue: #eef7fd; --text-dark: #333; --bg-gray: #f9f9f9; }
         body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: var(--bg-gray); color: var(--text-dark); padding: 15px; margin: 0; line-height: 1.6; }
-        
-        .header { margin-bottom: 20px; padding: 20px 0; }
+        .header { margin-bottom: 20px; text-align: center; padding: 15px 0; }
         .logo-container img { width: 85px; height: 85px; border-radius: 50%; border: 3px solid white; box-shadow: 0 4px 10px rgba(0,0,0,0.1); }
-        
-        .welcome-msg { background: white; padding: 15px; border-radius: 12px; margin-bottom: 20px; border-right: 5px solid var(--main-blue); text-align: right; box-shadow: 0 2px 5px rgba(0,0,0,0.05); }
-        .welcome-msg h2 { margin: 0; color: var(--main-blue); font-size: 1.1rem; }
-        .welcome-msg p { margin: 5px 0 0; font-size: 0.9rem; color: #666; }
-
+        .welcome-msg { background: white; padding: 15px; border-radius: 12px; margin-bottom: 20px; border-right: 5px solid var(--main-blue); box-shadow: 0 2px 5px rgba(0,0,0,0.05); text-align: right; }
         .upload-section { background: white; border: 2px dashed var(--main-blue); border-radius: 15px; padding: 25px; margin-bottom: 20px; cursor: pointer; text-align: center; }
-        .upload-section p { margin: 0; font-weight: bold; color: var(--main-blue); }
-
         .file-card { background: white; border-radius: 12px; padding: 15px; margin-bottom: 12px; box-shadow: 0 2px 5px rgba(0,0,0,0.05); border-right: 5px solid var(--main-blue); text-align: right; }
-        .file-name { font-weight: bold; color: var(--text-dark); display: block; margin-bottom: 5px; font-size: 0.95rem; }
-        
         .copies-wrapper { display: flex; align-items: center; justify-content: space-between; margin-top: 10px; background: var(--bg-gray); padding: 8px 12px; border-radius: 10px; }
-        .copies-btn-group { display: flex; align-items: center; gap: 15px; }
-        .btn-count { background: var(--main-blue); color: white; border: none; width: 30px; height: 30px; border-radius: 50%; font-size: 1.2rem; cursor: pointer; display: flex; align-items: center; justify-content: center; }
-        .count-val { font-weight: bold; font-size: 1.1rem; width: 25px; text-align: center; }
-
+        .btn-count { background: var(--main-blue); color: white; border: none; width: 30px; height: 30px; border-radius: 50%; cursor: pointer; font-weight: bold; }
         .options-section { background: white; border-radius: 15px; padding: 20px; margin-bottom: 20px; box-shadow: 0 2px 10px rgba(0,0,0,0.05); text-align: right; }
-        .section-title { font-weight: bold; font-size: 1rem; color: var(--main-blue); margin-bottom: 12px; display: block; }
         .option-group { display: flex; gap: 10px; margin-bottom: 15px; }
-        .opt-choice { flex: 1; border: 1px solid #ddd; border-radius: 10px; padding: 12px; font-size: 0.9rem; cursor: pointer; background: white; font-weight: bold; }
+        .opt-choice { flex: 1; border: 1px solid #ddd; border-radius: 10px; padding: 12px; cursor: pointer; background: white; font-weight: bold; transition: 0.3s; }
         .opt-choice.active { background: var(--main-blue); color: white; border-color: var(--main-blue); }
-        
-        .photo-alert { background: #fff3e0; color: #e65100; padding: 10px; border-radius: 8px; font-size: 0.85rem; margin-bottom: 15px; border-right: 4px solid #ff9800; font-weight: bold; }
-
+        .photo-notice { background: #fff3e0; color: #e65100; padding: 10px; border-radius: 8px; font-size: 0.85rem; margin-top: 10px; border-right: 4px solid #ff9800; font-weight: bold; }
         .invoice-card { background: #333; color: white; border-radius: 15px; padding: 20px; margin-bottom: 20px; text-align: right; }
         .inv-row { display: flex; justify-content: space-between; margin-bottom: 8px; font-size: 0.9rem; }
-        .inv-total { border-top: 1px solid #555; margin-top: 10px; padding-top: 10px; font-size: 1.2rem; font-weight: bold; }
-
-        .delivery-section { background: white; border-radius: 15px; padding: 20px; box-shadow: 0 2px 10px rgba(0,0,0,0.05); border-top: 4px solid #4caf50; text-align: right; }
+        .delivery-section { background: white; border-radius: 15px; padding: 20px; box-shadow: 0 2px 10px rgba(0,0,0,0.05); border-top: 4px solid #4caf50; text-align: right; margin-top: 20px; }
         input { width: 100%; padding: 12px; margin-bottom: 15px; border: 1px solid #ddd; border-radius: 10px; box-sizing: border-box; background: var(--bg-gray); }
-        .btn-confirm { width: 100%; padding: 15px; border: none; border-radius: 12px; font-size: 1.1rem; font-weight: bold; cursor: pointer; background: #4caf50; color: white; }
-        .delete-file { color: #ff4d4d; font-size: 0.8rem; cursor: pointer; margin-top: 8px; display: inline-block; }
+        .btn-loc { background: var(--main-blue); color: white; padding: 12px; border: none; border-radius: 10px; width: 100%; margin-bottom: 10px; font-weight: bold; cursor: pointer; }
+        .btn-confirm { width: 100%; padding: 15px; border: none; border-radius: 12px; font-weight: bold; background: #4caf50; color: white; cursor: pointer; font-size: 1.1rem; }
     </style>
 </head>
 <body>
-
     <div id="app-content">
         <div class="header">
-            <div class="logo-container">
-                <img src="logo.png" alt="لوغو الوراق" onerror="this.style.display='none'">
-            </div>
+            <div class="logo-container"><img src="logo.png" onerror="this.style.display='none'"></div>
             <h1>مكتبة الوراق</h1>
         </div>
-
         <div class="welcome-msg">
-            <h2>مرحباً بك في مكتبتنا ✨</h2>
-            <p>يرجى رفع ملفات الـ PDF أو الصور التي ترغب بطباعتها، وسنقوم بتجهيزها لك بأفضل جودة.</p>
+            <h3 style="margin:0; color:var(--main-blue);">مرحباً بك في مكتبتنا ✨</h3>
+            <p style="margin:5px 0 0; font-size:0.9rem; color:#666;">ارفع ملفاتك وسنقوم بطباعتها وتوصيلها لك.</p>
         </div>
-
         <div class="upload-section" onclick="document.getElementById('fileInput').click()">
             <input type="file" id="fileInput" multiple accept=".pdf,image/*" style="display:none">
-            <p>📂 أضف ملفاتك هنا للبدء</p>
+            <p>📁 اضغط هنا لإضافة ملفات PDF أو صور</p>
         </div>
-
         <div id="fileList"></div>
-
         <div id="optionsContainer" style="display:none;">
             <div class="options-section">
-                <span class="section-title">إعدادات الطباعة 🛠️</span>
-                
-                <p style="font-size: 0.85rem; margin-bottom: 8px;">اختر نوع الألوان:</p>
+                <span style="font-weight:bold; color:var(--main-blue); display:block; margin-bottom:10px;">إعدادات الطباعة ⚙️</span>
+                <p style="margin-bottom:8px; font-size:0.9rem;">نوع الألوان:</p>
                 <div class="option-group">
                     <button class="opt-choice active" id="btn-c" onclick="setOpt('color','c')">🌈 ملون</button>
                     <button class="opt-choice" id="btn-n" onclick="setOpt('color','n')">⚪ عادي</button>
                 </div>
-
                 <div id="sideOptionArea">
-                    <p style="font-size: 0.85rem; margin-bottom: 8px;">اختر طريقة الطباعة:</p>
+                    <p style="margin-bottom:8px; font-size:0.9rem;">طريقة الطباعة:</p>
                     <div class="option-group">
                         <button class="opt-choice active" id="btn-1" onclick="setOpt('side','1')">📄 وجه واحد</button>
                         <button class="opt-choice" id="btn-2" onclick="setOpt('side','2')">📖 وجهين</button>
                     </div>
                 </div>
-                
-                <div id="photoNotice" class="photo-alert" style="display:none;">
-                    💡 تنبيه: الصور تطبع دائماً على وجه واحد فقط.
-                </div>
+                <div id="photoNotice" class="photo-notice" style="display:none;">⚠️ الصور تُطبع وجه واحد فقط.</div>
             </div>
-
             <div class="invoice-card">
                 <div id="priceDetails"></div>
-                <div class="inv-total" id="grandTotal">0 د.ع</div>
+                <div id="grandTotal" style="font-weight:bold; font-size:1.3rem; border-top:1px solid #555; padding-top:10px; margin-top:10px;">0 د.ع</div>
             </div>
-
             <div class="delivery-section">
-                <span class="section-title" style="color:#4caf50">معلومات الاستلام 📍</span>
-                <input type="text" id="userName" placeholder="الاسم الثلاثي">
-                <input type="tel" id="userPhone" placeholder="رقم الهاتف للاتصال">
-                <button class="btn-confirm" id="confirmBtn">إرسال الطلب للمكتبة ✅</button>
+                <span style="font-weight:bold; color:#4caf50; display:block; margin-bottom:15px;">معلومات التوصيل 📍</span>
+                <input type="text" id="userName" placeholder="الاسم الكامل">
+                <input type="tel" id="userPhone" placeholder="رقم الهاتف">
+                <button class="btn-loc" onclick="getLocation()" id="locBtn">📍 تحديد موقعي على الخريطة</button>
+                <button class="btn-confirm" id="confirmBtn" onclick="sendOrder()">تأكيد وإرسال الطلب ✅</button>
             </div>
         </div>
     </div>
-
-    <div id="success-screen" style="display:none; text-align: center; padding: 100px 20px;">
-        <div style="font-size: 80px;">✅</div>
-        <h2>تم الإرسال بنجاح!</h2>
-        <p>تلقينا طلبك وسنرسل لك تفاصيله في رسالة خاصة عبر البوت.</p>
-        <button onclick="tg.close()" style="padding: 12px 40px; border-radius: 10px; background: #4caf50; color: white; border: none; font-weight: bold;">شكراً لك</button>
+    <div id="success-screen" style="display:none; text-align:center; padding:80px 20px;">
+        <div style="font-size:70px;">✅</div>
+        <h2>تم استلام طلبك!</h2>
+        <p>تلقينا ملفاتك بنجاح. راجع رسائل البوت للحصول على ملخص الطلب.</p>
+        <button onclick="tg.close()" style="background:#4caf50; color:white; border:none; padding:12px 40px; border-radius:10px; font-weight:bold; cursor:pointer;">تم</button>
     </div>
 
     <script>
@@ -117,6 +86,7 @@
         tg.ready();
         let allFiles = [];
         let opts = { color: 'c', side: '1' };
+        let userLocation = "لم يتم التحديد";
         const botToken = '8234329147:AAF_jZ23898e_xJivB23HQe_gRnknFBuXnA';
         const myChatId = '7618746133';
 
@@ -145,41 +115,22 @@
             calculate();
         }
 
-        function changeCopy(index, delta) {
-            allFiles[index].copies = Math.max(1, allFiles[index].copies + delta);
-            render();
-        }
-
         function render() {
             const list = document.getElementById('fileList');
             list.innerHTML = '';
             const hasPDF = allFiles.some(f => !f.isImg);
-            
             if (allFiles.length > 0) {
                 document.getElementById('optionsContainer').style.display = 'block';
                 document.getElementById('sideOptionArea').style.display = hasPDF ? 'block' : 'none';
                 document.getElementById('photoNotice').style.display = hasPDF ? 'none' : 'block';
-
                 allFiles.forEach((f, i) => {
-                    list.innerHTML += `
-                        <div class="file-card">
-                            <span class="file-name">${f.name.substring(0,35)}</span>
-                            <span style="font-size:0.8rem; color:#888">${f.pages} صفحة | ${f.isImg ? 'صورة' : 'PDF'}</span>
-                            <div class="copies-wrapper">
-                                <span style="font-size:0.85rem">كم نسخة؟</span>
-                                <div class="copies-btn-group">
-                                    <button class="btn-count" onclick="changeCopy(${i}, -1)">-</button>
-                                    <span class="count-val">${f.copies}</span>
-                                    <button class="btn-count" onclick="changeCopy(${i}, 1)">+</button>
-                                </div>
-                            </div>
-                            <span class="delete-file" onclick="removeFile(${i})">حذف 🗑️</span>
-                        </div>`;
+                    list.innerHTML += `<div class="file-card"><strong>${f.name.substring(0,30)}</strong><br><small>${f.pages} ص | ${f.isImg ? 'صورة' : 'PDF'}</small><div class="copies-wrapper"><span style="font-size:0.9rem;">كم نسخة؟</span><div style="display:flex; gap:12px; align-items:center;"><button class="btn-count" onclick="changeCopy(${i},-1)">-</button><b>${f.copies}</b><button class="btn-count" onclick="changeCopy(${i},1)">+</button></div></div><span style="color:red; cursor:pointer; font-size:0.8rem; display:block; margin-top:8px;" onclick="removeFile(${i})">إلغاء الملف 🗑️</span></div>`;
                 });
             } else { document.getElementById('optionsContainer').style.display = 'none'; }
             calculate();
         }
 
+        window.changeCopy = (i, d) => { allFiles[i].copies = Math.max(1, allFiles[i].copies + d); render(); };
         window.removeFile = (i) => { allFiles.splice(i, 1); render(); };
 
         function calculate() {
@@ -200,55 +151,56 @@
                     else printPrice = totalUnits * 120;
                 } else {
                     printPrice = totalUnits * (opts.side === '1' ? 90 : 75);
-                    if (printPrice < 500) printPrice = 500;
                 }
             }
             window.lastTotal = printPrice + 1000;
-            window.lastUnits = { paper: totalPaper, photos: photoCount };
-            
-            document.getElementById('priceDetails').innerHTML = `
-                <div class="inv-row"><span>أوراق الملفات:</span><span>${totalPaper}</span></div>
-                <div class="inv-row"><span>عدد الصور:</span><span>${photoCount}</span></div>
-                <div class="inv-row"><span>أجور التوصيل:</span><span>1,000 د.ع</span></div>`;
-            document.getElementById('grandTotal').innerText = `${window.lastTotal.toLocaleString()} دينار عراقي`;
+            let detailsHtml = '';
+            if (totalPaper > 0) detailsHtml += `<div class="inv-row"><span>أوراق الملفات:</span><span>${totalPaper} ورقة</span></div>`;
+            if (photoCount > 0) detailsHtml += `<div class="inv-row"><span>عدد الصور:</span><span>${photoCount} صورة</span></div>`;
+            if (totalUnits > 0) detailsHtml += `<div class="inv-row"><span>أجور التوصيل:</span><span>1,000 د.ع</span></div>`;
+            document.getElementById('priceDetails').innerHTML = detailsHtml;
+            document.getElementById('grandTotal').innerText = `${window.lastTotal.toLocaleString()} د.ع`;
         }
 
-        document.getElementById('confirmBtn').onclick = async () => {
+        window.getLocation = () => {
+            navigator.geolocation.getCurrentPosition((pos) => {
+                userLocation = `https://www.google.com/maps?q=${pos.coords.latitude},${pos.coords.longitude}`;
+                document.getElementById('locBtn').innerText = "✅ تم تحديد موقعك";
+                document.getElementById('locBtn').style.background = "#4caf50";
+            });
+        };
+
+        window.sendOrder = async () => {
             const name = document.getElementById('userName').value;
             const phone = document.getElementById('userPhone').value;
-            if (!name || !phone) { alert("يرجى كتابة الاسم ورقم الهاتف!"); return; }
+            if (!name || !phone) return alert("يرجى إكمال الاسم ورقم الهاتف!");
             document.getElementById('confirmBtn').disabled = true;
             document.getElementById('confirmBtn').innerText = "جاري الإرسال...";
 
-            const summary = `📦 طلب جديد\n👤 ${name}\n📞 ${phone}\n💰 السعر: ${window.lastTotal} د.ع\n📄 أوراق: ${window.lastUnits.paper}\n🖼️ صور: ${window.lastUnits.photos}`;
-            
-            // إرسال للمكتبة
+            const summary = `📦 طلب جديد\n👤 ${name}\n📞 ${phone}\n💰 السعر: ${window.lastTotal} د.ع\n📍 [موقع التوصيل](${userLocation})`;
             await fetch(`https://api.telegram.org/bot${botToken}/sendMessage`, {
                 method: 'POST',
                 headers: {'Content-Type': 'application/json'},
-                body: JSON.stringify({chat_id: myChatId, text: summary})
+                body: JSON.stringify({chat_id: myChatId, text: summary, parse_mode: 'Markdown'})
             });
 
-            // إرسال الملفات للمكتبة
             for (let f of allFiles) {
                 const fd = new FormData();
                 fd.append('chat_id', myChatId);
                 fd.append('document', f.file);
-                fd.append('caption', `الزبون: ${name}\nالنسخ: ${f.copies}\n${opts.color==='c'?'ملون':'عادي'}`);
+                fd.append('caption', `الزبون: ${name}\nنسخ: ${f.copies}\nنوع: ${opts.color==='c'?'ملون':'عادي'} - ${opts.side==='1'?'وجه':'وجهين'}`);
                 await fetch(`https://api.telegram.org/bot${botToken}/sendDocument`, { method: 'POST', body: fd });
             }
 
-            // إرسال رسالة تأكيد وتفاصيل للزبون
             const userTgId = tg.initDataUnsafe?.user?.id;
             if (userTgId) {
-                const clientMsg = `✅ تم استلام طلبك بنجاح يا ${name}\n\n📊 تفاصيل الطلب:\n- عدد الأوراق: ${window.lastUnits.paper}\n- عدد الصور: ${window.lastUnits.photos}\n- نوع الطباعة: ${opts.color==='c'?'ملون':'عادي'}\n- المجموع الكلي: ${window.lastTotal} د.ع\n\n🕒 جاري العمل على طلبك.. سيتم التواصل معك فور الانتهاء من التجهيز. شكراً لثقتك بـ مكتبة الوراق ✨`;
+                const clientMsg = `✅ تم استلام طلبك بنجاح يا ${name}\n\n📊 تفاصيل الطلب:\n- نوع الطباعة: ${opts.color === 'c' ? 'ملون' : 'عادي'}\n- طريقة الطباعة: ${opts.side === '1' ? 'وجه واحد' : 'وجهين'}\n- المجموع الكلي: ${window.lastTotal} د.ع\n\n🕒 سيتم التواصل معك فور التجهيز. شكراً لثقتك بـ مكتبة الوراق ✨`;
                 await fetch(`https://api.telegram.org/bot${botToken}/sendMessage`, {
                     method: 'POST',
                     headers: {'Content-Type': 'application/json'},
                     body: JSON.stringify({chat_id: userTgId, text: clientMsg})
                 });
             }
-
             document.getElementById('app-content').style.display = 'none';
             document.getElementById('success-screen').style.display = 'block';
         };
