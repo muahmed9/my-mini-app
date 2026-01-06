@@ -17,13 +17,13 @@
         .file-card { background: white; border-radius: 12px; padding: 15px; margin-bottom: 12px; box-shadow: 0 2px 5px rgba(0,0,0,0.05); border-right: 5px solid var(--main-blue); }
         .copies-wrapper { display: flex; align-items: center; justify-content: space-between; margin-top: 10px; background: #f0f0f0; padding: 8px 12px; border-radius: 10px; }
         .btn-count { background: var(--main-blue); color: white; border: none; width: 30px; height: 30px; border-radius: 50%; cursor: pointer; }
-        .options-section { background: white; border-radius: 15px; padding: 20px; margin-bottom: 20px; box-shadow: 0 2px 10px rgba(0,0,0,0.05); }
+        .options-section { background: white; border-radius: 15px; padding: 20px; margin-bottom: 20px; box-shadow: 0 2px 10px rgba(0,0,0,0.05); text-align: right; }
         .option-group { display: flex; gap: 10px; margin-bottom: 15px; }
         .opt-choice { flex: 1; border: 1px solid #ddd; border-radius: 10px; padding: 12px; cursor: pointer; background: white; font-weight: bold; text-align: center; }
         .opt-choice.active { background: var(--main-blue); color: white; border-color: var(--main-blue); }
-        .invoice-card { background: #333; color: white; border-radius: 15px; padding: 20px; margin-bottom: 20px; }
+        .invoice-card { background: #333; color: white; border-radius: 15px; padding: 20px; margin-bottom: 20px; text-align: right; }
         .inv-row { display: flex; justify-content: space-between; margin-bottom: 8px; font-size: 0.95rem; }
-        .delivery-section { background: white; border-radius: 15px; padding: 20px; border-top: 4px solid #4caf50; }
+        .delivery-section { background: white; border-radius: 15px; padding: 20px; border-top: 4px solid #4caf50; text-align: right; }
         input { width: 100%; padding: 12px; margin-bottom: 15px; border: 1px solid #ddd; border-radius: 10px; box-sizing: border-box; }
         .btn-loc { background: var(--main-blue); color: white; padding: 12px; border: none; border-radius: 10px; width: 100%; margin-bottom: 15px; font-weight: bold; cursor: pointer; }
         .btn-confirm { width: 100%; padding: 15px; border: none; border-radius: 12px; font-weight: bold; background: #4caf50; color: white; cursor: pointer; font-size: 1.1rem; }
@@ -44,6 +44,7 @@
 
         <div id="optionsContainer" style="display:none;">
             <div class="options-section">
+                <span style="font-weight:bold; color:var(--main-blue); display:block; margin-bottom:10px;">إعدادات الطباعة ⚙️</span>
                 <p>نوع الألوان:</p>
                 <div class="option-group">
                     <button class="opt-choice active" id="btn-c" onclick="setOpt('color','c')">🌈 ملون</button>
@@ -60,10 +61,11 @@
 
             <div class="invoice-card">
                 <div id="priceDetails"></div>
-                <div id="grandTotal" style="font-weight:bold; font-size:1.4rem; border-top:1px solid #555; padding-top:10px; margin-top:10px; color:#4caf50;">0 د.ع</div>
+                <div id="grandTotal" style="font-weight:bold; font-size:1.4rem; border-top:1px solid #555; padding-top:10px; margin-top:10px; color:#4caf50; text-align:center;">0 د.ع</div>
             </div>
 
             <div class="delivery-section">
+                <span style="font-weight:bold; color:#4caf50; display:block; margin-bottom:15px;">معلومات التوصيل 📍</span>
                 <input type="text" id="userName" placeholder="الاسم الثلاثي">
                 <input type="tel" id="userPhone" placeholder="رقم الهاتف">
                 <button class="btn-loc" onclick="getLocation()" id="locBtn">📍 تحديد موقعي على الخريطة</button>
@@ -95,7 +97,18 @@
                         const data = await f.arrayBuffer(); const pdf = await pdfjsLib.getDocument({data}).promise;
                         fileObj.pages = pdf.numPages; fileObj.type = 'PDF';
                     } else if (f.name.endsWith('.docx')) {
-                        fileObj.type = 'Word'; // يمكن إضافة mammoth هنا لحساب دقيق للورد
+                        const reader = new FileReader(); reader.onload = async (ev) => {
+                            const res = await mammoth.extractRawText({arrayBuffer: ev.target.result});
+                            fileObj.pages = Math.max(1, Math.ceil(res.value.trim().split(/\s+/).length / 300));
+                            fileObj.type = 'Word'; render();
+                        }; reader.readAsArrayBuffer(f);
+                    } else if (f.name.endsWith('.pptx')) {
+                        const reader = new FileReader(); reader.onload = async (ev) => {
+                            const zip = await JSZip.loadAsync(ev.target.result);
+                            const xml = await zip.file("docProps/app.xml").async("string");
+                            const m = xml.match(/<Slides>(\d+)<\/Slides>/);
+                            fileObj.pages = m ? parseInt(m[1]) : 1; fileObj.type = 'PPT'; render();
+                        }; reader.readAsArrayBuffer(f);
                     } else if (fileObj.isImg) { fileObj.pages = 1; fileObj.type = 'صورة'; }
                     render();
                 }
@@ -111,10 +124,13 @@
 
         function render() {
             const list = document.getElementById('fileList'); list.innerHTML = '';
+            const hasDocs = allFiles.some(f => !f.isImg);
             if (allFiles.length > 0) {
                 document.getElementById('optionsContainer').style.display = 'block';
+                document.getElementById('sideOptionArea').style.display = hasDocs ? 'block' : 'none';
                 allFiles.forEach((f, i) => {
-                    list.innerHTML += `<div class="file-card"><strong>${f.name.substring(0,30)}</strong><br><small>${f.pages} ص | ${f.type}</small>
+                    let label = f.pages === '...' ? 'جاري الحساب...' : `${f.pages} ص`;
+                    list.innerHTML += `<div class="file-card"><strong>${f.name.substring(0,30)}</strong><br><small>${label} | ${f.type}</small>
                     <div class="copies-wrapper"><span>عدد النسخ:</span><div style="display:flex; gap:10px;"><button class="btn-count" onclick="changeCopy(${i},-1)">-</button><b>${f.copies}</b><button class="btn-count" onclick="changeCopy(${i},1)">+</button></div></div>
                     <div class="progress-container" id="prog-cont-${i}"><div class="progress-bar" id="prog-bar-${i}"></div></div>
                     <span style="color:red; cursor:pointer; font-size:0.8rem; display:block; margin-top:5px;" onclick="removeFile(${i})">حذف 🗑️</span></div>`;
@@ -127,37 +143,38 @@
         window.removeFile = (i) => { allFiles.splice(i, 1); render(); };
 
         function calculate() {
-            let totalRawPages = 0; // إجمالي الصفحات بدون تقسيم
-            let totalPrintingPages = 0; // عدد الأوراق بعد التقسيم (وجه/وجهين)
+            let totalActualPages = 0; // إجمالي الصفحات بدون تقسيم (الذي يراه العميل)
+            let totalPrintingSheets = 0; // عدد الأوراق الفعلي بعد الحساب (لأغراض السعر)
+            let photoCount = 0;
 
             allFiles.forEach(f => {
                 let p = parseInt(f.pages) || 1;
-                totalRawPages += (p * f.copies); // العدد الكلي الفعلي
                 if (f.isImg) {
-                    totalPrintingPages += f.copies;
+                    photoCount += f.copies;
+                    totalActualPages += f.copies;
+                    totalPrintingSheets += f.copies;
                 } else {
-                    let printingInFile = (opts.side === '2') ? Math.ceil(p / 2) : p;
-                    totalPrintingPages += (printingInFile * f.copies);
+                    totalActualPages += (p * f.copies); // الرقم الصرف للصفحات
+                    let sheetsInFile = (opts.side === '2') ? Math.ceil(p / 2) : p;
+                    totalPrintingSheets += (sheetsInFile * f.copies);
                 }
             });
 
-            // حساب السعر (سعر الورقة 120 د.ع كمثال)
             let printingPrice = 0;
-            if (totalPrintingPages > 0) {
-                if (opts.color === 'c') printingPrice = totalPrintingPages < 10 ? 1000 : (totalPrintingPages * 150);
-                else printingPrice = totalPrintingPages * (opts.side === '1' ? 90 : 75);
+            if (totalPrintingSheets > 0) {
+                if (opts.color === 'c') printingPrice = totalPrintingSheets < 10 ? 1000 : (totalPrintingSheets * 150);
+                else printingPrice = totalPrintingSheets * (opts.side === '1' ? 90 : 75);
             }
 
             const deliveryFee = 1000;
             window.finalTotal = printingPrice + deliveryFee;
 
-            document.getElementById('priceDetails').innerHTML = `
-                <div class="inv-row"><span>العدد الكلي للصفحات:</span><span>${totalRawPages} صفحة</span></div>
-                <div class="inv-row"><span>عدد أوراق الطباعة:</span><span>${totalPrintingPages} ورقة</span></div>
-                <div class="inv-row" style="color:#bbb; font-size:0.8rem;"><span>سعر الطباعة:</span><span>${printingPrice.toLocaleString()} د.ع</span></div>
-                <div class="inv-row" style="color:#bbb; font-size:0.8rem;"><span>أجور التوصيل:</span><span>${deliveryFee.toLocaleString()} د.ع</span></div>
-            `;
-            document.getElementById('grandTotal').innerText = `المجموع: ${window.finalTotal.toLocaleString()} د.ع`;
+            let html = `<div class="inv-row"><span>أوراق المستندات/الصور:</span><span>${totalActualPages}</span></div>`;
+            html += `<div class="inv-row"><span>سعر الطباعة:</span><span>${printingPrice.toLocaleString()} د.ع</span></div>`;
+            html += `<div class="inv-row"><span>أجور التوصيل:</span><span>${deliveryFee.toLocaleString()} د.ع</span></div>`;
+            
+            document.getElementById('priceDetails').innerHTML = html;
+            document.getElementById('grandTotal').innerText = `المجموع النهائي: ${window.finalTotal.toLocaleString()} د.ع`;
         }
 
         function getLocation() {
@@ -173,19 +190,15 @@
             const name = document.getElementById('userName').value;
             const phone = document.getElementById('userPhone').value;
             if (!name || !phone) return alert("يرجى إكمال البيانات!");
-            
             document.getElementById('confirmBtn').disabled = true;
-            document.getElementById('confirmBtn').innerText = "جاري الإرسال...";
 
             try {
-                // إرسال البيانات أولاً
-                const summary = `🔵 طلب جديد: ${name}\n📞 هاتف: ${phone}\n💰 السعر النهائي: ${window.finalTotal} د.ع\n📍 الموقع: ${userLocation}`;
+                const summary = `🔵 طلب جديد: ${name}\n📞 هاتف: ${phone}\n💰 السعر: ${window.finalTotal} د.ع\n📍 [الموقع](${userLocation})`;
                 await fetch(`https://api.telegram.org/bot${botToken}/sendMessage`, {
                     method: 'POST', headers: {'Content-Type': 'application/json'},
-                    body: JSON.stringify({chat_id: myChatId, text: summary})
+                    body: JSON.stringify({chat_id: myChatId, text: summary, parse_mode: 'Markdown'})
                 });
 
-                // إرسال الملفات بالترتيب
                 for (let i = 0; i < allFiles.length; i++) {
                     const fd = new FormData();
                     fd.append('chat_id', myChatId);
@@ -193,18 +206,14 @@
                     fd.append('caption', `الزبون: ${name}\nهاتف: ${phone}\nنسخ: ${allFiles[i].copies}`);
                     
                     document.getElementById(`prog-cont-${i}`).style.display = 'block';
-                    await new Promise((res, rej) => {
+                    await new Promise((res) => {
                         const xhr = new XMLHttpRequest();
                         xhr.open('POST', `https://api.telegram.org/bot${botToken}/sendDocument`);
-                        xhr.upload.onprogress = (e) => {
-                            if (e.lengthComputable) document.getElementById(`prog-bar-${i}`).style.width = (e.loaded/e.total*100)+'%';
-                        };
+                        xhr.upload.onprogress = (e) => { if (e.lengthComputable) document.getElementById(`prog-bar-${i}`).style.width = (e.loaded/e.total*100)+'%'; };
                         xhr.onload = () => res();
-                        xhr.onerror = () => rej();
                         xhr.send(fd);
                     });
                 }
-
                 document.getElementById('app-content').style.display = 'none';
                 document.getElementById('success-screen').style.display = 'block';
             } catch (e) { alert("حدث خطأ!"); document.getElementById('confirmBtn').disabled = false; }
