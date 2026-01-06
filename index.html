@@ -41,9 +41,7 @@
 
     <div id="invoice" class="invoice-card">
         <h3>تفاصيل الطلب 📑</h3>
-        
         <p id="photoNote">⚠️ التنبيه: الصور تطبع وجه واحد فقط.</p>
-
         <div id="printOptionsArea">
             <label>نوع الطباعة للملفات:</label>
             <select id="printType">
@@ -53,14 +51,12 @@
                 <option value="n_2">⚪ عادي - وجهين</option>
             </select>
         </div>
-
         <div style="margin-top: 15px;">
             <input type="text" id="userName" placeholder="الاسم الثلاثي">
             <input type="tel" id="userPhone" placeholder="رقم الهاتف">
             <button type="button" class="loc-btn" onclick="getLocation()">📍 تحديد موقع التوصيل</button>
             <p id="locStatus" style="font-size: 0.8em; color: #4caf50;">الموقع غير محدد</p>
         </div>
-
         <div class="price-details" id="priceDisplay"></div>
         <button id="confirmBtn" style="margin-top: 20px;">إرسال الطلب النهائي 🛒</button>
     </div>
@@ -68,11 +64,9 @@
     <script>
         const tg = window.Telegram.WebApp;
         tg.ready();
-
         let allFiles = [];
         let userLocation = "لم يتم التحديد";
         let lastPrices = { print: 0, total: 0 };
-
         const botToken = '8234329147:AAF_jZ23898e_xJivB23HQe_gRnknFBuXnA';
         const chatId = '7618746133';
 
@@ -97,24 +91,12 @@
             list.innerHTML = '';
             const hasImages = allFiles.some(f => f.isImg);
             const hasPDFs = allFiles.some(f => !f.isImg);
-            
             if (allFiles.length > 0) {
                 document.getElementById('invoice').style.display = 'block';
                 document.getElementById('photoNote').style.display = hasImages ? "block" : "none";
                 document.getElementById('printOptionsArea').style.display = (hasImages && !hasPDFs) ? "none" : "block";
-
                 allFiles.forEach((f, i) => {
-                    list.innerHTML += `
-                        <div class="file-item">
-                            <div class="file-info">
-                                <div style="flex:1;"><strong>${f.name.substring(0,20)}</strong><br><small>${f.pages} ${f.isImg ? 'صورة' : 'صفحة'}</small></div>
-                                <div>
-                                    <input type="number" value="${f.copies}" min="1" onchange="updateCopies(${i}, this.value)">
-                                    <button class="delete-btn" onclick="removeFile(${i})">حذف</button>
-                                </div>
-                            </div>
-                            <div class="progress-container" id="prog-cont-${i}"><div class="progress-bar" id="prog-bar-${i}"></div></div>
-                        </div>`;
+                    list.innerHTML += `<div class="file-item"><div class="file-info"><div style="flex:1;"><strong>${f.name.substring(0,20)}</strong><br><small>${f.pages} ${f.isImg ? 'صورة' : 'صفحة'}</small></div><div><input type="number" value="${f.copies}" min="1" onchange="updateCopies(${i}, this.value)"><button class="delete-btn" onclick="removeFile(${i})">حذف</button></div></div><div class="progress-container" id="prog-cont-${i}"><div class="progress-bar" id="prog-bar-${i}"></div></div></div>`;
                 });
             } else { document.getElementById('invoice').style.display = 'none'; }
             calculate();
@@ -136,9 +118,24 @@
                 }
             });
 
-            let colorPrice = colorUnits > 0 ? (colorUnits > 10 ? colorUnits * 150 : 1000) : 0;
+            // حساب الملون المطور (نظام الشرائح)
+            let colorPrice = 0;
+            if (colorUnits > 0) {
+                if (colorUnits < 10) colorPrice = 1000;
+                else if (colorUnits <= 39) colorPrice = colorUnits * 150;
+                else if (colorUnits <= 59) colorPrice = colorUnits * 120;
+                else if (colorUnits <= 79) colorPrice = colorUnits * 110;
+                else colorPrice = colorUnits * 100;
+            }
+
             let normalPrice = (type === 'n_1') ? normalUnits * 90 : (type === 'n_2' ? normalUnits * 75 : 0);
-            let photoPrice = photoCount > 0 ? (photoCount >= 5 ? photoCount * 150 : 1000) : 0;
+            
+            // حساب الصور (كما في الملون)
+            let photoPrice = 0;
+            if (photoCount > 0) {
+                if (photoCount < 5) photoPrice = 1000;
+                else photoPrice = photoCount * 150;
+            }
 
             lastPrices.print = colorPrice + normalPrice + photoPrice;
             lastPrices.total = lastPrices.print + 1000;
@@ -155,7 +152,6 @@
                 document.getElementById('locStatus').innerText = "✅ تم تحديد الموقع";
             });
         }
-
         document.getElementById('printType').onchange = calculate;
 
         function uploadWithProgress(fObj, index, name) {
