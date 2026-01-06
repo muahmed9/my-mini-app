@@ -3,11 +3,10 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>مكتبة الوراق - طلب متكامل</title>
+    <title>مكتبة الوراق - النسخة المصححة</title>
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.16.105/pdf.min.js"></script>
     <style>
-        /* تنسيقات الواجهة لتناسب تيليجرام */
         body { font-family: sans-serif; text-align: center; padding: 20px; background-color: var(--tg-theme-bg-color); color: var(--tg-theme-text-color); }
         .upload-box { border: 2px dashed #248bcf; padding: 20px; border-radius: 10px; cursor: pointer; margin-bottom: 20px; }
         .file-item { background: rgba(0,0,0,0.05); margin: 10px 0; padding: 10px; border-radius: 8px; display: flex; justify-content: space-between; align-items: center; text-align: right; }
@@ -34,7 +33,6 @@
 
     <div id="invoice" class="invoice-card">
         <h3>تفاصيل الطلب 📑</h3>
-        
         <p id="photoNote" style="color: #ff9800; font-size: 0.85em; display: none; font-weight: bold;"></p>
 
         <label>نوع الطباعة:</label>
@@ -54,7 +52,6 @@
         </div>
 
         <div class="price-details" id="priceDisplay"></div>
-
         <button id="confirmBtn" style="margin-top: 20px;">إرسال الطلب النهائي 🛒</button>
     </div>
 
@@ -66,7 +63,6 @@
         let userLocation = "لم يتم التحديد";
         let lastPrices = { print: 0, delivery: 1000, total: 0 };
 
-        // 1. التعامل مع رفع الملفات
         document.getElementById('fileInput').onchange = async (e) => {
             const files = Array.from(e.target.files);
             for (let f of files) {
@@ -83,11 +79,9 @@
             render();
         };
 
-        // 2. دالة الرسم وتحديث خيارات الواجهة بذكاء
         function render() {
             const list = document.getElementById('fileList');
             list.innerHTML = '';
-            
             const hasImages = allFiles.some(f => f.isImg);
             const hasPDFs = allFiles.some(f => !f.isImg);
             const photoNote = document.getElementById('photoNote');
@@ -97,8 +91,6 @@
 
             if (allFiles.length > 0) {
                 document.getElementById('invoice').style.display = 'block';
-                
-                // التحكم في خيارات الوجهين بناءً على نوع الملفات
                 if (hasImages && !hasPDFs) {
                     photoNote.innerText = "⚠️ التنبيه: الصور تطبع وجه واحد فقط.";
                     photoNote.style.display = "block";
@@ -133,7 +125,6 @@
         window.updateCopies = (i, v) => { allFiles[i].copies = parseInt(v) || 1; calculate(); };
         window.removeFile = (i) => { allFiles.splice(i, 1); render(); };
 
-        // 3. جلب الموقع الجغرافي
         function getLocation() {
             const status = document.getElementById('locStatus');
             if (navigator.geolocation) {
@@ -145,27 +136,34 @@
             }
         }
 
-        // 4. دالة حساب السعر النهائي
         function calculate() {
             const type = document.getElementById('printType').value;
-            let totalPrintCost = 0;
+            let accumulatedUnits = 0;
 
+            // الخطوة 1: جمع الوحدات ككتلة واحدة
             allFiles.forEach(f => {
-                let units = 0;
+                let fileUnits = 0;
                 if (f.isImg) {
-                    units = f.copies; // الصور دائماً وجه واحد
+                    fileUnits = f.copies; 
                 } else {
-                    units = (type.endsWith('_2') ? Math.ceil(f.pages / 2) : f.pages) * f.copies;
+                    fileUnits = (type.endsWith('_2') ? Math.ceil(f.pages / 2) : f.pages) * f.copies;
                 }
-                
-                if (type.startsWith('c')) {
-                    totalPrintCost += (units < 5 && units > 0) ? 1000 : units * 150;
-                } else {
-                    totalPrintCost += units * (type === 'n_1' ? 90 : 75);
-                }
+                accumulatedUnits += fileUnits;
             });
 
-            let roundedPrint = Math.ceil(totalPrintCost / 250) * 250;
+            // الخطوة 2: حساب السعر بناءً على المجموع الكلي للوحدات
+            let rawPrintPrice = 0;
+            if (accumulatedUnits > 0) {
+                if (type.startsWith('c')) {
+                    rawPrintPrice = (accumulatedUnits < 5) ? 1000 : accumulatedUnits * 150;
+                } else {
+                    let rate = (type === 'n_1' ? 90 : 75);
+                    rawPrintPrice = accumulatedUnits * rate;
+                }
+            }
+
+            // الخطوة 3: التقريب لأقرب 250 وإضافة التوصيل
+            let roundedPrint = Math.ceil(rawPrintPrice / 250) * 250;
             lastPrices = { print: roundedPrint, delivery: 1000, total: roundedPrint + 1000 };
 
             document.getElementById('priceDisplay').innerHTML = `
@@ -177,11 +175,9 @@
 
         document.getElementById('printType').onchange = calculate;
 
-        // 5. إرسال البيانات النهائية للبوت
         document.getElementById('confirmBtn').onclick = () => {
             const name = document.getElementById('userName').value;
             const phone = document.getElementById('userPhone').value;
-
             if (!name || !phone) { alert("يرجى إكمال الاسم والهاتف!"); return; }
 
             const summary = allFiles.map(f => `- ${f.name} (${f.copies} نسخة)`).join('\n');
