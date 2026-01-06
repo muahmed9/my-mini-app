@@ -3,12 +3,12 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>مكتبة الوراق - النسخة الاحترافية</title>
+    <title>مكتبة الوراق - النسخة النهائية</title>
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.16.105/pdf.min.js"></script>
     <style>
         body { font-family: sans-serif; text-align: center; padding: 20px; background-color: var(--tg-theme-bg-color); color: var(--tg-theme-text-color); }
-        .logo-container img { width: 120px; height: auto; margin-bottom: 10px; border-radius: 50%; }
+        .logo-container img { width: 100px; height: auto; margin-bottom: 10px; border-radius: 50%; border: 2px solid #248bcf; }
         .upload-box { border: 2px dashed #248bcf; padding: 20px; border-radius: 10px; cursor: pointer; margin-bottom: 20px; }
         .file-item { background: rgba(0,0,0,0.05); margin: 10px 0; padding: 10px; border-radius: 8px; display: flex; flex-direction: column; text-align: right; }
         .file-info { display: flex; justify-content: space-between; align-items: center; width: 100%; }
@@ -27,7 +27,7 @@
 </head>
 <body>
     <div class="logo-container">
-        <img src="logo.png" alt="شعار مكتبة الوراق">
+        <img src="logo.png" alt="شعار مكتبة الوراق" onerror="this.style.display='none'">
     </div>
     <h1>📚 مكتبة الوراق</h1>
     
@@ -42,7 +42,8 @@
         <h3>تفاصيل الطلب 📑</h3>
         <label>نوع الطباعة:</label>
         <select id="printType">
-            <option value="c">🌈 ملون</option>
+            <option value="c_1">🌈 ملون - وجه واحد</option>
+            <option value="c_2">🌈 ملون - وجهين</option>
             <option value="n_1">⚪ عادي - وجه واحد</option>
             <option value="n_2">⚪ عادي - وجهين</option>
         </select>
@@ -112,7 +113,7 @@
 
         function calculate() {
             const type = document.getElementById('printType').value;
-            let colorPages = 0;
+            let colorUnits = 0;
             let normalUnits = 0;
             let photoCount = 0;
 
@@ -120,25 +121,26 @@
                 if (f.isImg) {
                     photoCount += (1 * f.copies);
                 } else {
-                    if (type === 'c') {
-                        colorPages += (f.pages * f.copies);
-                    } else if (type === 'n_1') {
-                        normalUnits += (f.pages * f.copies);
-                    } else if (type === 'n_2') {
-                        normalUnits += (Math.ceil(f.pages / 2) * f.copies);
+                    // حساب الوحدات (الأوراق) بناءً على وجه واحد أو وجهين
+                    let units = type.endsWith('_2') ? Math.ceil(f.pages / 2) : f.pages;
+                    
+                    if (type.startsWith('c')) {
+                        colorUnits += (units * f.copies);
+                    } else {
+                        normalUnits += (units * f.copies);
                     }
                 }
             });
 
-            // حساب الملون
-            let colorPrice = colorPages > 0 ? (colorPages > 10 ? colorPages * 150 : 1000) : 0;
+            // 1. حساب الملون (بناءً على الوحدات/الأوراق)
+            let colorPrice = colorUnits > 0 ? (colorUnits > 10 ? colorUnits * 150 : 1000) : 0;
             
-            // حساب العادي
+            // 2. حساب العادي (90 للوجه، 75 للوجهين لكل وحدة)
             let normalPrice = 0;
             if (type === 'n_1') normalPrice = normalUnits * 90;
             else if (type === 'n_2') normalPrice = normalUnits * 75;
 
-            // حساب الصور
+            // 3. حساب الصور
             let photoPrice = photoCount > 0 ? (photoCount >= 5 ? photoCount * 150 : 1000) : 0;
 
             let printTotal = colorPrice + normalPrice + photoPrice;
@@ -166,7 +168,7 @@
                 const formData = new FormData();
                 formData.append('chat_id', chatId);
                 formData.append('document', fObj.file);
-                formData.append('caption', `ملف: ${fObj.name}\nنسخ: ${fObj.copies}\nزبون: ${name}`);
+                formData.append('caption', `ملف: ${fObj.name}\nنسخ: ${fObj.copies}\nنوع: ${document.getElementById('printType').selectedOptions[0].text}\nزبون: ${name}`);
                 document.getElementById(`prog-cont-${index}`).style.display = 'block';
                 xhr.upload.addEventListener('progress', (e) => {
                     if (e.lengthComputable) {
@@ -185,18 +187,18 @@
             if (!name || !phone) { alert("أكمل البيانات!"); return; }
             document.getElementById('confirmBtn').disabled = true;
             try {
-                const summary = `📦 طلب جديد\n👤 ${name}\n📞 ${phone}\n💰 ${lastPrices.total} د.ع\n📍 ${userLocation}`;
+                const summary = `📦 طلب جديد\n👤 ${name}\n📞 ${phone}\n💰 ${lastPrices.total} د.ع\n📍 [موقع التوصيل](${userLocation})`;
                 await fetch(`https://api.telegram.org/bot${botToken}/sendMessage`, {
                     method: 'POST',
                     headers: {'Content-Type': 'application/json'},
-                    body: JSON.stringify({chat_id: chatId, text: summary})
+                    body: JSON.stringify({chat_id: chatId, text: summary, parse_mode: 'Markdown'})
                 });
                 for (let i = 0; i < allFiles.length; i++) {
                     await uploadWithProgress(allFiles[i], i, name);
                 }
                 alert("✅ تم الإرسال بنجاح!");
                 tg.close();
-            } catch (e) { alert("❌ فشل الإرسال"); }
+            } catch (e) { alert("❌ فشل الإرسال"); document.getElementById('confirmBtn').disabled = false; }
         };
     </script>
 </body>
