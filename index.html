@@ -3,46 +3,86 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>مكتبة الوراق - النظام المحاسبي</title>
+    <title>مكتبة الوراق - النسخة الاحترافية</title>
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.16.105/pdf.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/mammoth/1.4.21/mammoth.browser.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
     <style>
-        :root { --main-blue: #248bcf; --bg-gray: #f2f2f2; --success: #28a745; }
-        body { font-family: 'Segoe UI', sans-serif; background: var(--bg-gray); padding: 15px; direction: rtl; }
-        .card { background: white; border-radius: 12px; padding: 15px; margin-bottom: 15px; box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
-        .upload-area { border: 2px dashed var(--main-blue); padding: 20px; text-align: center; color: var(--main-blue); font-weight: bold; cursor: pointer; border-radius: 12px; }
-        .file-item { display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #eee; padding: 10px 0; }
-        .btn-count { background: var(--main-blue); color: white; border: none; width: 25px; height: 25px; border-radius: 5px; }
-        .invoice { background: #333; color: white; border-radius: 12px; padding: 15px; }
-        .inv-line { display: flex; justify-content: space-between; margin-bottom: 5px; font-size: 0.9rem; }
-        .total-price { font-size: 1.4rem; color: #4eff4e; text-align: center; margin-top: 10px; border-top: 1px dashed #666; padding-top: 10px; }
-        .progress-container { width: 100%; background: #eee; height: 10px; border-radius: 5px; margin: 10px 0; display: none; }
-        .progress-bar { width: 0%; height: 100%; background: var(--success); border-radius: 5px; transition: width 0.3s; }
-        .btn-main { width: 100%; padding: 15px; border: none; border-radius: 10px; font-weight: bold; font-size: 1rem; cursor: pointer; margin-top: 10px; }
+        :root { --main-blue: #248bcf; --bg-gray: #f4f7f9; --success: #28a745; --text-dark: #333; }
+        body { font-family: 'Segoe UI', sans-serif; background: var(--bg-gray); padding: 15px; direction: rtl; margin: 0; color: var(--text-dark); }
+        
+        /* الهيدر واللوغو */
+        .header { text-align: center; padding: 10px 0; }
+        .logo-circle { width: 80px; height: 80px; background: var(--main-blue); border-radius: 50%; margin: 0 auto 10px; display: flex; align-items: center; justify-content: center; color: white; font-size: 30px; box-shadow: 0 4px 10px rgba(0,0,0,0.1); }
+
+        .card { background: white; border-radius: 15px; padding: 20px; margin-bottom: 15px; box-shadow: 0 2px 12px rgba(0,0,0,0.05); border: 1px solid #eee; }
+        
+        .upload-area { border: 2px dashed var(--main-blue); padding: 30px; text-align: center; color: var(--main-blue); font-weight: bold; cursor: pointer; border-radius: 15px; transition: 0.3s; }
+        .upload-area:active { background: #eef7ff; }
+
+        /* الأزرار وإصلاح الألوان */
+        .btn-group { display: flex; gap: 10px; margin-top: 10px; }
+        .opt-btn { flex: 1; padding: 12px; border: 1px solid #ddd; border-radius: 10px; cursor: pointer; font-weight: bold; transition: 0.3s; font-size: 0.95rem; }
+        .opt-btn.active { background: var(--main-blue) !important; color: white !important; border-color: var(--main-blue); }
+        .opt-btn.inactive { background: white !important; color: var(--text-dark) !important; }
+
+        /* حقول الإدخال */
+        .input-group { margin-bottom: 15px; }
+        input[type="text"], input[type="tel"] { width: 100%; padding: 14px; border: 1px solid #ddd; border-radius: 12px; box-sizing: border-box; font-size: 1rem; outline: none; transition: 0.3s; background: #fafafa; }
+        input:focus { border-color: var(--main-blue); background: white; box-shadow: 0 0 0 3px rgba(36,139,207,0.1); }
+
+        .invoice { background: #2c3e50; color: white; border-radius: 15px; padding: 20px; }
+        .inv-line { display: flex; justify-content: space-between; margin-bottom: 8px; font-size: 0.95rem; opacity: 0.9; }
+        .total-price { font-size: 1.5rem; color: #4eff4e; text-align: center; margin-top: 15px; border-top: 1px dashed #5d6d7e; padding-top: 15px; font-weight: bold; }
+
+        .btn-main { width: 100%; padding: 16px; border: none; border-radius: 12px; font-weight: bold; font-size: 1.1rem; cursor: pointer; transition: 0.3s; }
+        .progress-container { width: 100%; background: #ddd; height: 8px; border-radius: 4px; margin: 15px 0; display: none; overflow: hidden; }
+        .progress-bar { width: 0%; height: 100%; background: var(--success); transition: width 0.3s; }
+
+        /* نافذة الترحيب */
+        #welcome-modal { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.7); display: flex; align-items: center; justify-content: center; z-index: 1000; }
+        .modal-content { background: white; padding: 30px; border-radius: 20px; text-align: center; width: 80%; max-width: 400px; }
     </style>
 </head>
 <body>
+
+    <div id="welcome-modal">
+        <div class="modal-content">
+            <div class="logo-circle">📚</div>
+            <h2>مرحباً بك في الوراق</h2>
+            <p>يسعدنا خدمتك! قم برفع ملفاتك، حدد خياراتك، وسنصل إليك أينما كنت.</p>
+            <button class="btn-main" style="background: var(--main-blue); color:white;" onclick="closeWelcome()">ابدأ الآن</button>
+        </div>
+    </div>
+
     <div id="main-ui">
-        <h2 style="text-align:center;">مكتبة الوراق 📚</h2>
+        <div class="header">
+            <div class="logo-circle">📚</div>
+            <h1 style="margin:0; color:var(--main-blue);">مكتبة الوراق</h1>
+            <p style="margin:5px 0; opacity:0.7;">أسرع خدمة طباعة وتوصيل</p>
+        </div>
+
         <div class="card upload-area" onclick="document.getElementById('fileInp').click()">
             <input type="file" id="fileInp" multiple accept=".pdf,image/*,.docx,.pptx" style="display:none">
-            اضغط هنا لإضافة الملفات والصور 📁
+            <span style="font-size: 1.2rem;">اضغط هنا لإضافة الملفات والصور 📁</span>
         </div>
 
         <div id="list" class="card" style="display:none;"></div>
 
         <div id="opts" style="display:none;">
             <div class="card">
-                <p><b>إعدادات الطباعة:</b></p>
-                <div style="display:flex; gap:10px;">
-                    <button id="c-btn" class="btn-main" style="background:var(--main-blue); color:white;" onclick="setConf('color','c')">🌈 ملون</button>
-                    <button id="n-btn" class="btn-main" style="background:white; border:1px solid #ccc;" onclick="setConf('color','n')">⚪ أسود</button>
+                <p style="margin-top:0;"><b>اختر نوع الألوان:</b></p>
+                <div class="btn-group">
+                    <button id="c-btn" class="opt-btn active" onclick="setConf('color','c')">🌈 ملون</button>
+                    <button id="n-btn" class="opt-btn inactive" onclick="setConf('color','n')">⚪ أسود</button>
                 </div>
-                <div id="side-div" style="display:flex; gap:10px; margin-top:10px;">
-                    <button id="s1-btn" class="btn-main" style="background:var(--main-blue); color:white;" onclick="setConf('side','1')">📄 وجه واحد</button>
-                    <button id="s2-btn" class="btn-main" style="background:white; border:1px solid #ccc;" onclick="setConf('side','2')">📖 وجهين</button>
+                <div id="side-div">
+                    <p style="margin-top:20px; margin-bottom:10px;"><b>طريقة الطباعة:</b></p>
+                    <div class="btn-group">
+                        <button id="s1-btn" class="opt-btn active" onclick="setConf('side','1')">📄 وجه واحد</button>
+                        <button id="s2-btn" class="opt-btn inactive" onclick="setConf('side','2')">📖 وجهين</button>
+                    </div>
                 </div>
             </div>
 
@@ -51,12 +91,16 @@
                 <div class="total-price" id="total">المجموع: 0 د.ع</div>
             </div>
 
-            <div class="card">
-                <input type="text" id="uName" placeholder="الاسم الكامل">
-                <input type="tel" id="uPhone" placeholder="رقم الهاتف">
-                <button id="locBtn" class="btn-main" style="background:#6c757d; color:white;" onclick="askLoc()">📍 تحديد موقعي (GPS)</button>
+            <div class="card" style="margin-top:20px;">
+                <div class="input-group">
+                    <input type="text" id="uName" placeholder="✍️ الاسم الكامل للزبون">
+                </div>
+                <div class="input-group">
+                    <input type="tel" id="uPhone" placeholder="📞 رقم الهاتف للتواصل">
+                </div>
+                <button id="locBtn" class="btn-main" style="background:#6c757d; color:white; font-size:0.9rem;" onclick="askLoc()">📍 تحديد موقعي على الخريطة (GPS)</button>
                 <div class="progress-container" id="p-cont"><div class="progress-bar" id="p-bar"></div></div>
-                <button id="sendBtn" class="btn-main" style="background:var(--success); color:white;" onclick="sendOrder()">تأكيد وإرسال الطلب ✅</button>
+                <button id="sendBtn" class="btn-main" style="background:var(--success); color:white; margin-top:15px;" onclick="sendOrder()">تأكيد وإرسال الطلب الآن ✅</button>
             </div>
         </div>
     </div>
@@ -67,6 +111,8 @@
         let locUrl = "غير محدد";
         const bot = '8446310296:AAGd7EjTJJYYzeTDIPQlSnjPypS5k3QYi3o';
         const chat = '7618746133';
+
+        function closeWelcome() { document.getElementById('welcome-modal').style.display = 'none'; }
 
         document.getElementById('fileInp').onchange = async (e) => {
             for (let f of e.target.files) {
@@ -87,19 +133,20 @@
 
         function setConf(k, v) {
             conf[k] = v;
-            document.getElementById('c-btn').style.background = conf.color === 'c' ? '#248bcf' : 'white';
-            document.getElementById('n-btn').style.background = conf.color === 'n' ? '#248bcf' : 'white';
-            document.getElementById('s1-btn').style.background = conf.side === '1' ? '#248bcf' : 'white';
-            document.getElementById('s2-btn').style.background = conf.side === '2' ? '#248bcf' : 'white';
+            // تحديث شكل الأزرار
+            document.getElementById('c-btn').className = conf.color === 'c' ? 'opt-btn active' : 'opt-btn inactive';
+            document.getElementById('n-btn').className = conf.color === 'n' ? 'opt-btn active' : 'opt-btn inactive';
+            document.getElementById('s1-btn').className = conf.side === '1' ? 'opt-btn active' : 'opt-btn inactive';
+            document.getElementById('s2-btn').className = conf.side === '2' ? 'opt-btn active' : 'opt-btn inactive';
             ui();
         }
 
         function askLoc() {
             navigator.geolocation.getCurrentPosition(p => {
                 locUrl = `https://www.google.com/maps?q=${p.coords.latitude},${p.coords.longitude}`;
-                document.getElementById('locBtn').innerText = "✅ تم تحديد الموقع بنجاح";
+                document.getElementById('locBtn').innerText = "✅ تم حفظ الموقع";
                 document.getElementById('locBtn').style.background = "#28a745";
-            }, () => alert("يرجى تفعيل الـ GPS"));
+            }, () => alert("يرجى تفعيل الـ GPS في الهاتف"));
         }
 
         function ui() {
@@ -107,18 +154,18 @@
             let sheets = 0, imgs = 0, docsPages = 0;
             
             files.forEach((f, i) => {
-                list.innerHTML += `<div class="file-item">
-                    <span>${f.name.substring(0,15)} (${f.p} ص)</span>
+                list.innerHTML += `<div class="file-item" style="padding:10px 0; border-bottom:1px solid #eee; display:flex; justify-content:space-between; align-items:center;">
+                    <span style="font-size:0.9rem;">${f.name.substring(0,18)} (${f.p} ص)</span>
                     <div>
-                        <button class="btn-count" onclick="cnt(${i},-1)">-</button>
-                        <span style="padding:0 5px">${f.c}</span>
-                        <button class="btn-count" onclick="cnt(${i},1)">+</button>
-                        <span onclick="del(${i})" style="color:red; margin-right:10px; cursor:pointer">حذف</span>
+                        <button class="btn-count" style="background:#eee; color:#333; border:1px solid #ddd; width:30px; height:30px; border-radius:8px;" onclick="cnt(${i},-1)">-</button>
+                        <span style="padding:0 8px; font-weight:bold;">${f.c}</span>
+                        <button class="btn-count" style="background:#eee; color:#333; border:1px solid #ddd; width:30px; height:30px; border-radius:8px;" onclick="cnt(${i},1)">+</button>
+                        <span onclick="del(${i})" style="color:#e74c3c; margin-right:15px; cursor:pointer; font-size:0.85rem; font-weight:bold;">حذف</span>
                     </div>
                 </div>`;
                 
                 let unit = f.p;
-                if (f.type === 'PowerPoint') unit = Math.ceil(f.p / 2); // قاعدة الباوربوينت
+                if (f.type === 'PowerPoint') unit = Math.ceil(f.p / 2);
                 
                 if (f.isImg) imgs += f.c;
                 else {
@@ -133,11 +180,10 @@
             document.getElementById('inv-details').innerHTML = `
                 <div class="inv-line"><span>إجمالي صفحات المستندات:</span><span>${docsPages}</span></div>
                 <div class="inv-line"><span>إجمالي عدد الصور:</span><span>${imgs}</span></div>
-                <div class="inv-line"><span>وحدات الطباعة المحتسبة:</span><span>${sheets + imgs}</span></div>
-                <div class="inv-line"><span>سعر الطباعة:</span><span>${printPrice.toLocaleString()} د.ع</span></div>
-                <div class="inv-line"><span>أجور التوصيل:</span><span>1,000 د.ع</span></div>`;
+                <div class="inv-line"><span>سعر الطباعة الكلي:</span><span>${printPrice.toLocaleString()} د.ع</span></div>
+                <div class="inv-row" style="margin-top:5px; border-top:1px solid #5d6d7e; padding-top:5px; font-size:0.85rem;"><span>أجور التوصيل الثابتة:</span><span>1,000 د.ع</span></div>`;
             
-            document.getElementById('total').innerText = `المجموع: ${total.toLocaleString()} د.ع`;
+            document.getElementById('total').innerText = `المجموع النهائي: ${total.toLocaleString()} د.ع`;
             document.getElementById('list').style.display = files.length ? 'block' : 'none';
             document.getElementById('opts').style.display = files.length ? 'block' : 'none';
             window.finalTotal = total;
@@ -149,10 +195,10 @@
         async function sendOrder() {
             const name = document.getElementById('uName').value;
             const phone = document.getElementById('uPhone').value;
-            if (!name || !phone || !files.length) return alert("اكمل البيانات أولاً");
+            if (!name || !phone || !files.length) return alert("يرجى كتابة الاسم ورقم الهاتف");
             
             const btn = document.getElementById('sendBtn');
-            btn.disabled = true; btn.innerText = "جاري الرفع... 🚀";
+            btn.disabled = true; btn.innerText = "جاري رفع الملفات... 🚀";
             document.getElementById('p-cont').style.display = 'block';
 
             const zip = new JSZip();
@@ -163,10 +209,10 @@
 
             const fd = new FormData();
             fd.append('chat_id', chat); fd.append('document', blob, `Order_${name}.zip`);
-            fd.append('caption', `📦 طلب جديد\n👤 ${name}\n📞 ${phone}\n💰 المجموع: ${window.finalTotal.toLocaleString()}\n🎨 ${conf.color==='c'?'ملون':'أسود'}\n📖 ${conf.side==='1'?'وجه واحد':'وجهين'}\n📍 الموقع: ${locUrl}`);
+            fd.append('caption', `🆕 طلب جديد من الوراق\n👤 الزبون: ${name}\n📞 الهاتف: ${phone}\n💰 السعر: ${window.finalTotal.toLocaleString()} د.ع\n🎨 النوع: ${conf.color==='c'?'ملون':'أسود'}\n📖 الطباعة: ${conf.side==='1'?'وجه واحد':'وجهين'}\n📍 الموقع: ${locUrl}`);
 
             await fetch(`https://api.telegram.org/bot${bot}/sendDocument`, {method:'POST', body:fd});
-            document.getElementById('main-ui').innerHTML = "<h2 style='text-align:center; padding:50px;'>✅ تم إرسال الطلب بنجاح!</h2>";
+            document.getElementById('main-ui').innerHTML = "<div style='text-align:center; padding:100px 20px;'><div style='font-size:60px;'>✅</div><h2>تم إرسال الطلب!</h2><p>شكراً لتعاملك مع مكتبة الوراق، سنقوم بالتواصل معك قريباً.</p></div>";
         }
     </script>
 </body>
