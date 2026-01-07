@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>مكتبة الوراق - نظام الطلبات الموحدة</title>
+    <title>مكتبة الوراق - النسخة المعتمدة</title>
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.16.105/pdf.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/mammoth/1.4.21/mammoth.browser.min.js"></script>
@@ -15,30 +15,25 @@
         .welcome-card { background: white; border-right: 5px solid var(--main-blue); padding: 15px; border-radius: 12px; margin-bottom: 20px; box-shadow: 0 2px 8px rgba(0,0,0,0.05); }
         .upload-section { background: white; border: 2px dashed var(--main-blue); border-radius: 15px; padding: 25px; cursor: pointer; text-align: center; color: var(--main-blue); font-weight: bold; }
         .file-card { background: white; border-radius: 12px; padding: 12px; margin-bottom: 10px; border-right: 5px solid var(--main-blue); display: flex; justify-content: space-between; align-items: center; }
-        .options-section { background: white; border-radius: 15px; padding: 20px; margin-bottom: 20px; box-shadow: 0 2px 10px rgba(0,0,0,0.05); }
+        .options-section { background: white; border-radius: 15px; padding: 20px; margin-bottom: 20px; }
         .opt-choice { border: 1px solid #ddd; border-radius: 10px; padding: 12px; cursor: pointer; background: white; flex: 1; text-align: center; font-weight: bold; }
         .opt-choice.active { background: var(--main-blue); color: white; border-color: var(--main-blue); }
         .invoice-card { background: #333; color: white; border-radius: 15px; padding: 20px; margin-bottom: 20px; }
         .inv-row { display: flex; justify-content: space-between; margin-bottom: 8px; font-size: 0.9rem; }
-        input { width: 100%; padding: 12px; margin-bottom: 15px; border: 1px solid #ddd; border-radius: 10px; box-sizing: border-box; font-size: 1rem; }
+        input { width: 100%; padding: 12px; margin-bottom: 15px; border: 1px solid #ddd; border-radius: 10px; box-sizing: border-box; }
         .btn-confirm { width: 100%; padding: 15px; border: none; border-radius: 12px; background: var(--success-green); color: white; font-weight: bold; font-size: 1.1rem; cursor: pointer; }
-        .btn-confirm:disabled { background: #ccc; cursor: not-allowed; }
         .btn-count { background: var(--main-blue); color: white; border: none; width: 28px; height: 28px; border-radius: 50%; cursor: pointer; }
-        .photo-notice { background: #fff3e0; color: #e65100; padding: 10px; border-radius: 8px; font-size: 0.8rem; border-right: 4px solid #ff9800; margin-top: 10px; font-weight: bold; }
     </style>
 </head>
 <body>
     <div id="app-content">
         <div class="header"><h1>مكتبة الوراق</h1></div>
-        <div class="welcome-card"><h2>مرحباً بك ✨</h2><p>ارفع ملفاتك وسنقوم بضغطها وإرسالها كطلب واحد منظم.</p></div>
-        
+        <div class="welcome-card"><h2>مرحباً بك ✨</h2><p>ارفع ملفاتك وسنقوم بتجهيزها فوراً.</p></div>
         <div class="upload-section" onclick="document.getElementById('fileInput').click()">
             <input type="file" id="fileInput" multiple accept=".pdf,image/*,.docx,.pptx" style="display:none">
             📁 اضغط هنا لإضافة ملفاتك أو صورك
         </div>
-
         <div id="fileList" style="margin-top: 15px;"></div>
-
         <div id="optionsContainer" style="display:none;">
             <div class="options-section">
                 <p><b>نوع الألوان:</b></p>
@@ -53,29 +48,22 @@
                         <button class="opt-choice" id="btn-2" onclick="setOpt('side','2')">📖 وجهين</button>
                     </div>
                 </div>
-                <div id="photoNoticeArea" style="display:none;"><div class="photo-notice">⚠️ الصور تُطبع وجه واحد دائماً.</div></div>
             </div>
-
             <div class="invoice-card">
                 <div id="priceDetails"></div>
                 <div id="grandTotal" style="font-weight:bold; color:var(--success-green); text-align:center; font-size:1.4rem; border-top:1px solid #555; padding-top:10px; margin-top:10px;"></div>
             </div>
-
-            <div style="background:white; padding:20px; border-radius:15px; box-shadow: 0 2px 10px rgba(0,0,0,0.05);">
+            <div style="background:white; padding:20px; border-radius:15px;">
                 <input type="text" id="userName" placeholder="الاسم الكامل">
                 <input type="tel" id="userPhone" placeholder="رقم الهاتف">
                 <button style="background:var(--main-blue); color:white; margin-bottom:10px;" class="btn-confirm" onclick="getLocation()" id="locBtn">📍 تحديد موقعي على الخريطة</button>
-                <button class="btn-confirm" id="confirmBtn" onclick="processOrder()">تأكيد وإرسال الطلب بنظام ZIP ✅</button>
+                <button class="btn-confirm" id="confirmBtn" onclick="processOrder()">تأكيد وإرسال الطلب ✅</button>
             </div>
         </div>
     </div>
-
     <div id="success-screen" style="display:none; text-align:center; padding:100px 20px;">
-        <div style="font-size:70px;">✅</div>
-        <h2>تم استلام طلبك بنجاح!</h2>
-        <p id="successOrderIdDisplay" style="font-weight:bold; color:var(--main-blue);"></p>
-        <p>تم ضغط ملفاتك وإرسالها كحزمة واحدة للمكتبة.</p>
-        <button onclick="tg.close()" style="background:var(--success-green); color:white; border:none; padding:12px 40px; border-radius:10px; cursor:pointer; font-weight:bold;">إغلاق</button>
+        <div style="font-size:70px;">✅</div><h2>تم الاستلام!</h2><p id="successOrderIdDisplay"></p>
+        <button onclick="tg.close()" style="background:var(--success-green); color:white; border:none; padding:12px 40px; border-radius:10px;">إغلاق</button>
     </div>
 
     <script>
@@ -88,23 +76,21 @@
         document.getElementById('fileInput').onchange = async (e) => {
             const files = Array.from(e.target.files);
             for (let f of files) {
-                if (!allFiles.some(ex => ex.name === f.name)) {
-                    let fileObj = { file: f, name: f.name, pages: '...', copies: 1, isImg: f.type.startsWith('image/'), type: '' };
-                    allFiles.push(fileObj); render();
-                    if (f.type === 'application/pdf') {
-                        const data = await f.arrayBuffer();
-                        const pdf = await pdfjsLib.getDocument({data}).promise;
-                        fileObj.pages = pdf.numPages; fileObj.type = 'PDF';
-                    } else if (f.name.endsWith('.docx')) {
-                        const reader = new FileReader();
-                        reader.onload = async (ev) => {
-                            const res = await mammoth.extractRawText({arrayBuffer: ev.target.result});
-                            fileObj.pages = Math.max(1, Math.ceil(res.value.trim().split(/\s+/).length / 300));
-                            fileObj.type = 'Word'; render();
-                        }; reader.readAsArrayBuffer(f);
-                    } else if (fileObj.isImg) { fileObj.pages = 1; fileObj.type = 'صورة'; }
-                    render();
+                let fileObj = { file: f, name: f.name, pages: 1, copies: 1, isImg: f.type.startsWith('image/'), type: 'صورة' };
+                if (f.type === 'application/pdf') {
+                    const pdf = await pdfjsLib.getDocument({data: await f.arrayBuffer()}).promise;
+                    fileObj.pages = pdf.numPages; fileObj.type = 'PDF';
+                } else if (f.name.endsWith('.docx')) {
+                    const res = await mammoth.extractRawText({arrayBuffer: await f.arrayBuffer()});
+                    fileObj.pages = Math.max(1, Math.ceil(res.value.trim().split(/\s+/).length / 300));
+                    fileObj.type = 'Word';
+                } else if (f.name.endsWith('.pptx')) {
+                    const zip = await JSZip.loadAsync(await f.arrayBuffer());
+                    const appXml = await zip.file("docProps/app.xml").async("string");
+                    const m = appXml.match(/<Slides>(\d+)<\/Slides>/);
+                    fileObj.pages = m ? parseInt(m[1]) : 1; fileObj.type = 'PowerPoint';
                 }
+                allFiles.push(fileObj); render();
             }
         };
 
@@ -118,25 +104,18 @@
 
         function render() {
             const list = document.getElementById('fileList'); list.innerHTML = '';
-            const hasDocs = allFiles.some(f => !f.isImg);
-            const hasImgs = allFiles.some(f => f.isImg);
-            if (allFiles.length > 0) {
-                document.getElementById('optionsContainer').style.display = 'block';
-                document.getElementById('sideOptionArea').style.display = hasDocs ? 'block' : 'none';
-                document.getElementById('photoNoticeArea').style.display = hasImgs ? 'block' : 'none';
-                allFiles.forEach((f, i) => {
-                    list.innerHTML += `<div class="file-card">
-                        <div><b>${f.name.substring(0,25)}...</b><br><small>${f.pages} ص | ${f.type}</small></div>
-                        <div style="text-align:center;">
-                            <small>النسخ</small><br>
-                            <button class="btn-count" onclick="changeCopy(${i},-1)">-</button>
-                            <span style="margin:0 5px; font-weight:bold;">${f.copies}</span>
-                            <button class="btn-count" onclick="changeCopy(${i},1)">+</button>
-                        </div>
-                        <div onclick="removeFile(${i})" style="color:red; cursor:pointer;">🗑️</div>
-                    </div>`;
-                });
-            } else document.getElementById('optionsContainer').style.display = 'none';
+            document.getElementById('optionsContainer').style.display = allFiles.length > 0 ? 'block' : 'none';
+            allFiles.forEach((f, i) => {
+                list.innerHTML += `<div class="file-card">
+                    <div><b>${f.name.substring(0,20)}</b><br><small>${f.pages} ص | ${f.type}</small></div>
+                    <div style="text-align:center;"><small>النسخ</small><br>
+                        <button class="btn-count" onclick="changeCopy(${i},-1)">-</button>
+                        <span style="margin:0 5px;">${f.copies}</span>
+                        <button class="btn-count" onclick="changeCopy(${i},1)">+</button>
+                    </div>
+                    <div onclick="removeFile(${i})" style="color:red; cursor:pointer; font-size:0.8rem;">حذف</div>
+                </div>`;
+            });
             calculate();
         }
 
@@ -144,78 +123,46 @@
         window.removeFile = (i) => { allFiles.splice(i,1); render(); };
 
         function calculate() {
-            let totalSheets = 0, totalDocPages = 0, totalImages = 0;
+            let totalSheets = 0, totalFiles = 0, totalCopies = 0;
             allFiles.forEach(f => {
-                let p = parseInt(f.pages) || 0;
-                if (f.isImg) { totalImages += f.copies; totalSheets += f.copies; }
-                else { totalDocPages += (p * f.copies); totalSheets += (opts.side === '2' ? Math.ceil(p / 2) : p) * f.copies; }
+                totalFiles++; totalCopies += f.copies;
+                totalSheets += (f.isImg ? 1 : (opts.side === '2' ? Math.ceil(f.pages / 2) : f.pages)) * f.copies;
             });
-            let printPrice = totalSheets > 0 ? (opts.color === 'c' ? (totalSheets * 150) : (totalSheets * (opts.side === '1' ? 90 : 75))) : 0;
+            let printPrice = totalSheets * (opts.color === 'c' ? 150 : (opts.side === '1' ? 90 : 75));
             window.finalTotal = printPrice + (totalSheets > 0 ? 1000 : 0);
-            let html = ``;
-            if (totalDocPages > 0) html += `<div class="inv-row"><span>ورق مستندات:</span><span>${totalDocPages} صفحة</span></div>`;
-            if (totalImages > 0) html += `<div class="inv-row"><span>صور ملونة:</span><span>${totalImages} صور</span></div>`;
-            if (totalSheets > 0) html += `<div class="inv-row"><span>أجور التوصيل:</span><span>1,000 د.ع</span></div>`;
-            document.getElementById('priceDetails').innerHTML = html;
-            document.getElementById('grandTotal').innerText = `المجموع النهائي: ${window.finalTotal.toLocaleString()} د.ع`;
-        }
-
-        function getLocation() {
-            navigator.geolocation.getCurrentPosition((pos) => {
-                userLocation = `https://www.google.com/maps?q=${pos.coords.latitude},${pos.coords.longitude}`;
-                document.getElementById('locBtn').innerText = "✅ تم حفظ الموقع";
-                document.getElementById('locBtn').style.background = "#4caf50";
-            });
+            document.getElementById('priceDetails').innerHTML = `
+                <div class="inv-row"><span>عدد الملفات:</span><span>${totalFiles}</span></div>
+                <div class="inv-row"><span>إجمالي النسخ:</span><span>${totalCopies}</span></div>
+                <div class="inv-row"><span>سعر الطباعة:</span><span>${printPrice.toLocaleString()} د.ع</span></div>
+                <div class="inv-row"><span>أجور التوصيل:</span><span>1,000 د.ع</span></div>`;
+            document.getElementById('grandTotal').innerText = `المجموع: ${window.finalTotal.toLocaleString()} د.ع`;
         }
 
         async function processOrder() {
             const name = document.getElementById('userName').value;
             const phone = document.getElementById('userPhone').value;
-            if (!name || !phone || allFiles.length === 0 || allFiles.some(f => f.pages === '...')) return alert("يرجى إكمال البيانات ورفع الملفات!");
+            if (!name || !phone || allFiles.length === 0) return alert("يرجى إكمال البيانات ورفع الملفات!");
+            const btn = document.getElementById('confirmBtn'); btn.disabled = true; btn.innerText = "جاري الإرسال... 📦";
             
-            const confirmBtn = document.getElementById('confirmBtn');
-            confirmBtn.disabled = true;
-            confirmBtn.innerText = "جاري ضغط الملفات وإرسالها... 📦";
-
-            const orderId = "WR-" + Math.floor(1000 + Math.random() * 9000);
-            const colorLabel = opts.color === 'c' ? '🌈 ملون' : '⚪ عادي';
-            const sideLabel = opts.side === '1' ? '📄 وجه واحد' : '📖 وجهين';
-
             try {
-                // ضغط الملفات في ZIP
+                const orderId = "WR-" + Math.floor(1000 + Math.random() * 9000);
                 const zip = new JSZip();
+                let filesInfo = "";
                 allFiles.forEach(f => {
                     zip.file(f.name, f.file);
+                    filesInfo += `- ${f.name} (${f.copies} نسخة)\n`;
                 });
                 const blob = await zip.generateAsync({type: "blob"});
-
-                // إرسال الملف الموحد
                 const fd = new FormData();
-                fd.append('chat_id', myChatId);
-                fd.append('document', blob, `Order_${orderId}_${name}.zip`);
-                fd.append('caption', `📦 طلب متكامل جديد #${orderId}\n👤 الزبون: ${name}\n📞 هاتف: ${phone}\n💰 السعر: ${window.finalTotal.toLocaleString()} د.ع\n🎨 الألوان: ${colorLabel}\n📖 الطباعة: ${sideLabel}\n📍 الموقع: ${userLocation}\n🔢 عدد الملفات: ${allFiles.length}`);
+                fd.append('chat_id', myChatId); fd.append('document', blob, `Order_${orderId}.zip`);
+                fd.append('caption', `📦 طلب #${orderId}\n👤 الزبون: ${name}\n📞 هاتف: ${phone}\n💰 السعر: ${window.finalTotal.toLocaleString()} د.ع\n🎨 الألوان: ${opts.color==='c'?'ملون':'عادي'}\n📖 الطباعة: ${opts.side==='1'?'وجه واحد':'وجهين'}\n\n📋 الملفات والنسخ:\n${filesInfo}`);
 
                 await fetch(`https://api.telegram.org/bot${botToken}/sendDocument`, { method: 'POST', body: fd });
-
-                // رسالة للزبون
-                const userId = tg.initDataUnsafe?.user?.id;
-                if (userId) {
-                    const clientMsg = `✅ تم استلام طلبك رقم #${orderId} بنجاح!\n\n💰 المجموع: ${window.finalTotal.toLocaleString()} د.ع\n📦 تم إرسال ملفاتك كحزمة واحدة.\n📞 للتواصل: 07752564099\n\nشكراً لتعاملك مع مكتبة الوراق ✨`;
-                    await fetch(`https://api.telegram.org/bot${botToken}/sendMessage`, {
-                        method: 'POST', headers: {'Content-Type': 'application/json'},
-                        body: JSON.stringify({chat_id: userId, text: clientMsg})
-                    });
-                }
-
+                
                 document.getElementById('successOrderIdDisplay').innerText = "رقم الطلب: #" + orderId;
                 document.getElementById('app-content').style.display = 'none';
                 document.getElementById('success-screen').style.display = 'block';
-
-            } catch (e) {
-                alert("حدث خطأ أثناء الإرسال!");
-                confirmBtn.disabled = false;
-                confirmBtn.innerText = "إعادة المحاولة";
-            }
+            } catch (e) { alert("خطأ في الإرسال!"); btn.disabled = false; }
         }
     </script>
 </body>
