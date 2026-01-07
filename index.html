@@ -164,7 +164,7 @@
                     totalSheets += (opts.side === '2' ? Math.ceil(p / 2) : p) * f.copies;
                 }
             });
-            let printPrice = totalSheets > 0 ? (opts.color === 'c' ? (totalSheets < 10 ? 1000 : totalSheets * 150) : (totalSheets * (opts.side === '1' ? 90 : 75))) : 0;
+           let printPrice = totalSheets > 0 ? (opts.color === 'c' ? (totalSheets * 150) : (totalSheets * (opts.side === '1' ? 90 : 75))) : 0;
             window.finalTotal = printPrice + (totalSheets > 0 ? 1000 : 0);
             let html = '';
             if (totalDocPages > 0) html += `<div class="inv-row"><span>أوراق المستندات:</span><span>${totalDocPages}</span></div>`;
@@ -241,3 +241,4 @@
     </script>
 </body>
 </html>
+
