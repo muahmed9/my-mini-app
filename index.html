@@ -30,7 +30,8 @@
         .modal-content { background: white; padding: 30px; border-radius: 20px; text-align: center; width: 85%; max-width: 400px; }
         .file-item { padding: 10px 0; border-bottom: 1px solid #eee; display: flex; justify-content: space-between; align-items: center; }
         .btn-count { background: #eee; border: 1px solid #ddd; width: 30px; height: 30px; border-radius: 8px; cursor: pointer; font-weight: bold; }
-        .image-note { color: var(--main-blue); font-size: 0.85rem; font-weight: bold; margin-top: 10px; display: none; border: 1px solid var(--main-blue); padding: 8px; border-radius: 8px; background: #f0f8ff; }
+        /* تحسين مظهر الملاحظة */
+        .image-note { color: var(--main-blue); font-size: 0.85rem; font-weight: bold; margin: 12px 0; display: none; border: 1px solid #b3d7ff; padding: 10px; border-radius: 10px; background: #e7f3ff; text-align: center; }
     </style>
 </head>
 <body>
@@ -49,8 +50,7 @@
         
         <div class="card upload-area" onclick="document.getElementById('fileInp').click()">
             <input type="file" id="fileInp" multiple 
-                accept="image/*, .pdf, application/pdf, com.adobe.pdf, .doc, .docx, application/msword, application/vnd.openxmlformats-officedocument.wordprocessingml.document, com.microsoft.word.doc, .ppt, .pptx, application/vnd.ms-powerpoint, application/vnd.openxmlformats-officedocument.presentationml.presentation, com.microsoft.powerpoint.ppt" 
-                style="display:none">
+                accept="image/*, .pdf, application/pdf, com.adobe.pdf, .doc, .docx, application/msword, application/vnd.openxmlformats-officedocument.wordprocessingml.document, com.microsoft.word.doc, .ppt, .pptx, application/vnd.ms-powerpoint, application/vnd.openxmlformats-officedocument.presentationml.presentation, com.microsoft.powerpoint.ppt">
             <span style="font-size: 1.1rem;">📁 اضغط هنا لإضافة الملفات أو الصور</span>
         </div>
 
