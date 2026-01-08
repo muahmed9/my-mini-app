@@ -48,9 +48,9 @@
         <div class="header"><div class="logo-circle"></div><h1 style="margin:0; color:var(--main-blue);">مكتبة الوراق الالكترونية</h1></div>
         
         <div class="card upload-area" onclick="document.getElementById('fileInp').click()">
-            <input type="file" id="fileInp" multiple style="display:none">
+            <input type="file" id="fileInp" multiple accept="public.item, com.microsoft.word.doc, com.microsoft.excel.xls, com.microsoft.powerpoint.ppt, com.adobe.pdf, image/*" style="display:none">
             <span style="font-size: 1.1rem;">📁 اضغط هنا لإضافة الملفات أو الصور</span>
-            <p style="font-size: 0.8rem; color: #666; margin-top: 5px;">(يدعم PDF, Word, الصور)</p>
+            <p style="font-size: 0.75rem; color: #666; margin-top: 5px;">(PDF, Word, Excel, PowerPoint, الصور)</p>
         </div>
 
         <div id="list" class="card" style="display:none;"></div>
@@ -99,33 +99,38 @@
         function closeWelcome() { document.getElementById('welcome-modal').style.display = 'none'; }
 
         document.getElementById('fileInp').onchange = async (e) => {
+            const allowedExts = ['.pdf', '.docx', '.doc', '.pptx', '.ppt', '.xlsx', '.xls', '.jpg', '.jpeg', '.png', '.webp'];
+            
             for (let f of e.target.files) {
                 const fileName = f.name.toLowerCase();
-                let obj = { file: f, name: f.name, p: 0, c: 1, isImg: f.type.startsWith('image/'), type: 'صورة' };
+                const fileExt = fileName.substring(fileName.lastIndexOf('.'));
+                
+                // منع الفيديوهات والملفات غير المدعومة
+                if (!allowedExts.includes(fileExt) && !f.type.startsWith('image/')) {
+                    continue; // تجاهل الملف
+                }
+
+                let obj = { file: f, name: f.name, p: 0, c: 1, isImg: f.type.startsWith('image/'), type: 'مستند' };
                 
                 try {
                     const arrayBuffer = await f.arrayBuffer();
                     if (fileName.endsWith('.pdf')) {
                         const pdf = await pdfjsLib.getDocument({data: arrayBuffer}).promise;
-                        obj.p = pdf.numPages; obj.type = 'PDF';
-                        obj.isImg = false;
+                        obj.p = pdf.numPages; obj.type = 'PDF'; obj.isImg = false;
                     } else if (fileName.endsWith('.docx') || fileName.endsWith('.doc')) {
                         const res = await mammoth.extractRawText({arrayBuffer: arrayBuffer});
                         const words = res.value.trim().split(/\s+/).length;
                         obj.p = Math.max(1, Math.ceil(words / 300));
-                        obj.type = 'Word';
-                        obj.isImg = false;
+                        obj.type = 'Word'; obj.isImg = false;
                     } else if (fileName.endsWith('.pptx') || fileName.endsWith('.ppt')) {
                         const zip = await JSZip.loadAsync(arrayBuffer);
                         const xml = await zip.file("docProps/app.xml").async("string");
                         const m = xml.match(/<Slides>(\d+)<\/Slides>/);
-                        obj.p = m ? parseInt(m[1]) : 1; obj.type = 'PowerPoint';
-                        obj.isImg = false;
+                        obj.p = m ? parseInt(m[1]) : 1; obj.type = 'PowerPoint'; obj.isImg = false;
+                    } else if (fileName.endsWith('.xlsx') || fileName.endsWith('.xls')) {
+                        obj.p = 1; obj.type = 'Excel'; obj.isImg = false;
                     } else if (obj.isImg || f.type.startsWith('image/')) {
-                        obj.p = 1; obj.isImg = true;
-                    } else {
-                        // أي ملف آخر نعتبره مستند صفحة واحدة للسماح برفعه
-                        obj.p = 1; obj.isImg = false;
+                        obj.p = 1; obj.isImg = true; obj.type = 'صورة';
                     }
                 } catch (err) {
                     obj.p = 1;
