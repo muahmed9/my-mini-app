@@ -14,32 +14,23 @@
         .header { text-align: center; padding: 10px 0; }
         .logo-circle { width: 90px; height: 90px; background: white url('logo.png') no-repeat center; background-size: contain; border-radius: 50%; margin: 0 auto 10px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); border: 3px solid var(--main-blue); }
         .card { background: white; border-radius: 15px; padding: 20px; margin-bottom: 15px; box-shadow: 0 2px 12px rgba(0,0,0,0.05); border: 1px solid #eee; }
-        
-        /* تصميم منطقة الرفع المطور */
         .upload-area { border: 2px dashed var(--main-blue); padding: 25px; text-align: center; color: var(--main-blue); cursor: pointer; border-radius: 15px; transition: 0.3s; }
         .upload-area:active { background: #e1f0fa; }
-        
         .btn-group { display: flex; gap: 10px; margin-top: 10px; }
         .opt-btn { flex: 1; padding: 12px; border: 1px solid #ddd; border-radius: 10px; cursor: pointer; font-weight: bold; font-size: 0.95rem; }
         .opt-btn.active { background: var(--main-blue) !important; color: white !important; border-color: var(--main-blue); }
         .opt-btn.inactive { background: white !important; color: var(--text-dark) !important; }
-        
         input[type="text"], input[type="tel"] { width: 100%; padding: 14px; border: 1px solid #ddd; border-radius: 12px; box-sizing: border-box; font-size: 1rem; margin-bottom: 10px; background: #fafafa; }
-        
         .invoice { background: #2c3e50; color: white; border-radius: 15px; padding: 20px; margin-top: 15px; }
         .inv-line { display: flex; justify-content: space-between; margin-bottom: 8px; font-size: 0.9rem; }
         .total-price { font-size: 1.4rem; color: #4eff4e; text-align: center; margin-top: 15px; border-top: 1px dashed #5d6d7e; padding-top: 15px; font-weight: bold; }
-        
         .btn-main { width: 100%; padding: 16px; border: none; border-radius: 12px; font-weight: bold; font-size: 1.1rem; cursor: pointer; }
         .progress-container { width: 100%; background: #ddd; height: 8px; border-radius: 4px; margin: 15px 0; display: none; overflow: hidden; }
         .progress-bar { width: 0%; height: 100%; background: var(--success); }
-        
         #welcome-modal { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.85); display: flex; align-items: center; justify-content: center; z-index: 1000; }
         .modal-content { background: white; padding: 30px; border-radius: 20px; text-align: center; width: 85%; max-width: 400px; }
-        
         .file-item { padding: 10px 0; border-bottom: 1px solid #eee; display: flex; justify-content: space-between; align-items: center; }
         .btn-count { background: #eee; border: 1px solid #ddd; width: 32px; height: 32px; border-radius: 8px; cursor: pointer; font-weight: bold; }
-        
         .image-note { color: var(--main-blue); font-size: 0.85rem; font-weight: bold; margin: 12px 0; display: none; border: 1px solid #b3d7ff; padding: 10px; border-radius: 10px; background: #e7f3ff; text-align: center; }
         .ios-hint { font-size: 0.75rem; color: #777; margin-top: 8px; line-height: 1.4; }
     </style>
@@ -115,18 +106,13 @@
         function closeWelcome() { document.getElementById('welcome-modal').style.display = 'none'; }
 
         document.getElementById('fileInp').onchange = async (e) => {
-            // فلتر داخلي لمنع الفيديوهات وأي ملفات غير مرغوب بها
             const allowed = ['.pdf', '.docx', '.doc', '.xlsx', '.xls', '.pptx', '.ppt', '.jpg', '.jpeg', '.png', '.webp'];
-            
             for (let f of e.target.files) {
                 const name = f.name.toLowerCase();
                 const ext = name.substring(name.lastIndexOf('.'));
-                
-                // إذا كان الملف فيديو أو غير مدعوم سيتم تجاهله صامتاً
                 if (!allowed.includes(ext) && !f.type.startsWith('image/')) continue;
 
                 let obj = { file: f, name: f.name, p: 1, c: 1, isImg: f.type.startsWith('image/'), type: 'ملف' };
-                
                 try {
                     const buffer = await f.arrayBuffer();
                     if (name.endsWith('.pdf')) {
@@ -196,8 +182,25 @@
             document.getElementById('side-selection-container').style.display = hasDocs ? 'block' : 'none';
             document.getElementById('img-alert').style.display = hasImgs ? 'block' : 'none';
             
-            let pricePerSheet = conf.color === 'c' ? 150 : (conf.side === '1' ? 90 : 75);
-            let printPrice = (sheets + imgs) * pricePerSheet;
+            // حساب سعر الطباعة بناءً على نظام الشرائح الملونة الجديد
+            let printPrice = 0;
+            let totalUnits = sheets + imgs;
+
+            if (conf.color === 'c') {
+                if (totalUnits >= 1 && totalUnits <= 25) {
+                    printPrice = totalUnits * 150;
+                } else if (totalUnits >= 26 && totalUnits <= 40) {
+                    printPrice = totalUnits * 120;
+                } else if (totalUnits > 40 && totalUnits <= 70) {
+                    printPrice = totalUnits * 110;
+                } else if (totalUnits > 70) {
+                    printPrice = totalUnits * 100;
+                }
+            } else {
+                let pricePerSheetBlack = (conf.side === '1' ? 90 : 75);
+                printPrice = totalUnits * pricePerSheetBlack;
+            }
+
             let total = printPrice + (files.length > 0 ? 1000 : 0);
             
             document.getElementById('inv-details').innerHTML = `
@@ -260,5 +263,3 @@
     </script>
 </body>
 </html>
-
-
