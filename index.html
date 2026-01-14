@@ -32,7 +32,7 @@
         .file-item { padding: 10px 0; border-bottom: 1px solid #eee; display: flex; justify-content: space-between; align-items: center; }
         .btn-count { background: #eee; border: 1px solid #ddd; width: 32px; height: 32px; border-radius: 8px; cursor: pointer; font-weight: bold; }
         .image-note { color: var(--main-blue); font-size: 0.85rem; font-weight: bold; margin: 12px 0; display: none; border: 1px solid #b3d7ff; padding: 10px; border-radius: 10px; background: #e7f3ff; text-align: center; }
-        .ios-hint-box { background: #fffbef; border: 2px solid #fbd38d; border-radius: 12px; padding: 15px; margin-top: 15px; text-align: right; }
+        .ios-hint-box { background: #fffbef; border: 2px solid #fbd38d; border-radius: 12px; padding: 18px; margin-top: 15px; text-align: right; box-shadow: 0 2px 8px rgba(0,0,0,0.05); }
     </style>
 </head>
 <body>
@@ -60,10 +60,15 @@
             </div>
 
             <div class="ios-hint-box">
-                <span style="color: #c05621; font-weight: bold; font-size: 1.1rem; display: block; margin-bottom: 5px;">⚠️ ملاحظة لمستخدمي الآيفون:</span>
-                <p style="color: #744210; font-size: 0.95rem; margin: 0; line-height: 1.6;">
-                    يرجى عمل <b>"مشاركة"</b> ثم <b>"حفظ في الملفات" (Save to Files)</b> لملفات PDF و DOCX أولاً، ثم اضغط على "إضافة الملفات" واختيار "تصفح" لتجدها.
-                </p>
+                <span style="color: #c05621; font-weight: bold; font-size: 1.15rem; display: flex; align-items: center; margin-bottom: 12px;">⚠️ تنبيه لمستخدمي الآيفون (iPhone)</span>
+                <div style="color: #744210; font-size: 0.95rem; line-height: 1.7;">
+                    <p style="margin-bottom: 8px; font-weight: 600;">للعثور على ملفاتك (PDF, Word) داخل التطبيق، يرجى اتباع الآتي:</p>
+                    <ol style="padding-right: 20px; margin: 0;">
+                        <li>افتح الملف الذي وصلك (في واتساب أو تليجرام).</li>
+                        <li>اضغط على زر <b style="color: #c05621;">"مشاركة"</b> ثم اختر <b style="color: #c05621;">"حفظ في الملفات"</b>.</li>
+                        <li>عد للتطبيق، اضغط "إضافة ملفات" واختر <b style="color: #c05621;">"تصفح" (Browse)</b>.</li>
+                    </ol>
+                </div>
             </div>
             <input type="file" id="fileInp" multiple style="display:none">
         </div>
@@ -157,8 +162,8 @@
 
         function askLoc() {
             navigator.geolocation.getCurrentPosition(p => {
-                // تم تصحيح صياغة الرابط هنا
-                locUrl = `https://www.google.com/maps?q=${p.coords.latitude},${p.coords.longitude}`;
+                // تم تصحيح صياغة الرابط هنا باستخدام علامة $
+                locUrl = `https://www.google.com/maps?q=$/${p.coords.latitude},${p.coords.longitude}`;
                 document.getElementById('locBtn').innerText = "✅ تم حفظ الموقع بنجاح";
                 document.getElementById('locBtn').style.background = "#28a745";
             }, () => alert("يرجى تفعيل الـ GPS في جهازك لتحديد موقع التوصيل"));
