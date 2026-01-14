@@ -32,8 +32,7 @@
         .file-item { padding: 10px 0; border-bottom: 1px solid #eee; display: flex; justify-content: space-between; align-items: center; }
         .btn-count { background: #eee; border: 1px solid #ddd; width: 32px; height: 32px; border-radius: 8px; cursor: pointer; font-weight: bold; }
         .image-note { color: var(--main-blue); font-size: 0.85rem; font-weight: bold; margin: 12px 0; display: none; border: 1px solid #b3d7ff; padding: 10px; border-radius: 10px; background: #e7f3ff; text-align: center; }
-        .ios-hint { font-size: 0.75rem; color: #777; margin-top: 8px; line-height: 1.4; }
-        .free-delivery-badge { background: #28a745; color: white; font-size: 0.75rem; padding: 2px 8px; border-radius: 10px; margin-right: 5px; }
+        .ios-hint-box { background: #fffbef; border: 2px solid #fbd38d; border-radius: 12px; padding: 15px; margin-top: 15px; text-align: right; }
     </style>
 </head>
 <body>
@@ -57,8 +56,14 @@
         <div class="card">
             <div class="upload-area" onclick="document.getElementById('fileInp').click()">
                 <span style="font-size: 1.2rem;">📁 اضغط هنا لإضافة الملفات</span>
-                <div class="ios-hint">يدعم PDF, Word, Excel, PowerPoint والصور<br>
-                <b>آيفون:</b> يرجى "حفظ في الملفات" أولاً ثم اختيار "تصفح".</div>
+                <p style="font-size: 0.8rem; margin: 5px 0;">يدعم PDF, Word, Excel, PowerPoint والصور</p>
+            </div>
+
+            <div class="ios-hint-box">
+                <span style="color: #c05621; font-weight: bold; font-size: 1.1rem; display: block; margin-bottom: 5px;">⚠️ ملاحظة لمستخدمي الآيفون:</span>
+                <p style="color: #744210; font-size: 0.95rem; margin: 0; line-height: 1.6;">
+                    يرجى عمل <b>"مشاركة"</b> ثم <b>"حفظ في الملفات" (Save to Files)</b> لملفات PDF و DOCX أولاً، ثم اضغط على "إضافة الملفات" واختيار "تصفح" لتجدها.
+                </p>
             </div>
             <input type="file" id="fileInp" multiple style="display:none">
         </div>
@@ -86,7 +91,7 @@
 
             <div class="invoice">
                 <div id="inv-details"></div>
-                <div class="total-price" id="total">المجموع: 0 د.ع</div>
+                <div class="total-price" id="total">المجموع النهائي: 0 د.ع</div>
             </div>
 
             <div class="card" style="margin-top:20px;">
@@ -119,6 +124,7 @@
                 try {
                     const buffer = await f.arrayBuffer();
                     if (name.endsWith('.pdf')) {
+                        pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.16.105/pdf.worker.min.js';
                         const pdf = await pdfjsLib.getDocument({data: buffer}).promise;
                         obj.p = pdf.numPages; obj.type = 'PDF'; obj.isImg = false;
                     } else if (name.endsWith('.docx') || name.endsWith('.doc')) {
@@ -151,6 +157,7 @@
 
         function askLoc() {
             navigator.geolocation.getCurrentPosition(p => {
+                // تم تصحيح صياغة الرابط هنا
                 locUrl = `https://www.google.com/maps?q=${p.coords.latitude},${p.coords.longitude}`;
                 document.getElementById('locBtn').innerText = "✅ تم حفظ الموقع بنجاح";
                 document.getElementById('locBtn').style.background = "#28a745";
@@ -198,19 +205,14 @@
                 printPrice = totalUnits * pricePerSheetBlack;
             }
 
-            // منطق التوصيل المجاني للطلبات من 5000 فما فوق
-            let deliveryFee = 0;
-            if (files.length > 0) {
-                deliveryFee = (printPrice >= 5000) ? 0 : 1000;
-            }
-
+            let deliveryFee = (files.length > 0 && printPrice < 5000) ? 1000 : 0;
             let total = printPrice + deliveryFee;
             
             document.getElementById('inv-details').innerHTML = `
                 <div class="inv-line"><span>صفحات المستندات:</span><span>${docsPages}</span></div>
-                <div class="inv-line"><span>عدد الصور:</span><span>${imgs}</span></div>
+                <div class="inv-line"><span>عدد الصور المرفوعة:</span><span>${imgs}</span></div>
                 <div class="inv-line" style="border-top:1px solid #5d6d7e; padding-top:5px;"><span>سعر الطباعة:</span><span>${printPrice.toLocaleString()} د.ع</span></div>
-                <div class="inv-line"><span>أجور التوصيل:</span><span>${deliveryFee === 0 ? '<b style="color:#4eff4e;">مجاني ✨</b>' : '1,000 د.ع'}</span></div>`;
+                <div class="inv-line"><span>أجور التوصيل:</span><span>${deliveryFee === 0 && printPrice >= 5000 ? '<b style="color:#4eff4e;">مجاني ✨</b>' : (deliveryFee > 0 ? '1,000 د.ع' : '0 د.ع')}</span></div>`;
             
             document.getElementById('total').innerText = `المجموع النهائي: ${total.toLocaleString()} د.ع`;
             document.getElementById('list').style.display = files.length ? 'block' : 'none';
