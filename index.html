@@ -207,7 +207,7 @@
                 <div class="inv-line"><span>صفحات المستندات:</span><span>${docsPages}</span></div>
                 <div class="inv-line"><span>عدد الصور المرفوعة:</span><span>${imgs}</span></div>
                 <div class="inv-line" style="border-top:1px solid #5d6d7e; padding-top:5px;"><span>سعر الطباعة:</span><span>${printPrice.toLocaleString()} د.ع</span></div>
-                <div class="inv-line"><span>أجور التوصيل الثابتة:</span><span>1,000 د.ع</span></div>`;
+                <div class="inv-line"><span>أجور التوصيل الثابتة:</span><span>توصيل مجاني </span></div>`;
             
             document.getElementById('total').innerText = `المجموع: ${total.toLocaleString()} د.ع`;
             document.getElementById('list').style.display = files.length ? 'block' : 'none';
@@ -263,4 +263,5 @@
     </script>
 </body>
 </html>
+
 
